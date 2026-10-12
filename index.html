@@ -5,7 +5,7 @@
   <meta name="theme-color" content="#101820"><title>ICON | Tournament Control</title>
   <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=29">
+  <link rel="stylesheet" href="styles.css?v=30">
 </head>
 <body>
 <header class="topbar"><div class="brand"><img class="brand-logo" src="icon-vila-vicosa.png" alt="Logótipo ICON Jiu-Jitsu Vila Viçosa" width="58" height="58" style="display:block;width:58px;height:58px;max-width:58px;max-height:58px;object-fit:contain;flex:0 0 58px;border-radius:50%;"><div><p class="eyebrow">TOURNAMENT CONTROL</p><h1>ICON <span>JIU-JITSU</span></h1><p class="brand-location">VILA VIÇOSA</p></div></div><div class="top-right"><span id="connection" class="status"><i></i> A configurar</span><span id="who" class="user-email"></span></div></header>
@@ -70,7 +70,7 @@
         </article>
       </div>
       <div class="scoreboard-live-footer">
-        <div class="score-live-details"><div id="scoreMatchRef">CATEGORIA · RONDA</div><strong id="scoreRoundLabel">Final</strong>
+        <div class="score-live-details"><div id="scoreMatchRef">A carregar categoria…</div><strong id="scoreRoundLabel">A carregar fase…</strong>
           <div class="score-live-controls"><button id="scoreStart" class="score-start" type="button">Iniciar</button><button id="scorePause" class="score-pause" type="button">Pausa</button><button id="scoreReset" class="score-reset" type="button">Reiniciar</button><button id="scoreSwapColors" class="score-swap" type="button">Trocar cores</button><button id="scoreFullscreenBell" class="score-bell" type="button" aria-label="Alerta sonoro">🔔</button></div>
         </div>
         <div class="score-clock"><div id="scoreTimer" class="score-timer">06:00</div><div id="scoreTimerState" class="score-timer-state">PRONTO</div><label class="score-duration">Duração (minutos)<input id="scoreDuration" type="number" min="1" max="30" value="6"></label></div>
@@ -82,5 +82,5 @@
   <footer class="app-footer"><span>ICON JIU-JITSU · TOURNAMENT CONTROL</span><div><span id="sessionEmail"></span><button id="signOut" class="text-button">Terminar sessão ↗</button></div></footer>
 </section>
 </main><div id="toast" role="status" aria-live="polite"></div>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="app.js?v=29"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="app.js?v=30"></script>
 </body></html>

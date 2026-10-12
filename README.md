@@ -148,3 +148,10 @@ Substituir `index.html`, `styles.css` e `app.js` no repositório GitHub Pages pe
 - Após guardar automaticamente o resultado, mantém o combate terminado visível durante os dois minutos.
 - No fim do intervalo, consulta novamente os combates diretamente no Supabase e carrega o primeiro combate elegível com os dois atletas atribuídos.
 - Tenta preservar o modo de ecrã inteiro e deixa o relógio parado para a mesa iniciar quando estiver pronta.
+
+
+## Versão 30 — etiquetas reais de categoria e fase
+- Removidos os textos estáticos de exemplo “CATEGORIA · RONDA”.
+- A etiqueta de categoria passa a ser construída a partir da categoria guardada e, quando genérica, da faixa e do escalão etário dos atletas.
+- A etiqueta da fase é calculada a partir da ronda e dos combates da mesma chave/categoria; quando não há dados de ronda, apresenta “Combate” em vez de “Ronda”.
+- Atualizadas as versões CSS/JS para invalidar a cache do navegador.

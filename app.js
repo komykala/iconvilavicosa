@@ -30,20 +30,48 @@ function refreshMatchDisplayNames(){
 
 const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const roundName = (n,total=1) => { const remaining=total-n; if(remaining===0)return 'Final'; if(remaining===1)return 'Meia-final'; if(remaining===2)return 'Quartos de final'; if(remaining===3)return 'Oitavos de final'; return `Ronda ${n}`; };
-function matchRoundLabel(m){if(!m.round_number)return '';if(!m.bracket_id)return 'Combate';const total=Math.max(1,...matches.filter(x=>x.bracket_id===m.bracket_id).map(x=>x.round_number||1));return roundName(m.round_number,total)}
+function matchRoundLabel(m){
+ const round=Number(m.round_number||0);
+ if(!round)return 'Combate';
+ const group=matches.filter(x=>m.bracket_id?String(x.bracket_id)===String(m.bracket_id):String(x.category||'')===String(m.category||''));
+ const total=Math.max(round,...group.map(x=>Number(x.round_number||1)));
+ return roundName(round,total)||`Ronda ${round}`;
+}
+
 function displayMatchCategory(m){
- let cat=String(m.category||'').trim();
+ const raw=String(m.category||'').trim();
  const a=athletes.find(x=>String(x.id)===String(m.fighter_a_id));
  const b=athletes.find(x=>String(x.id)===String(m.fighter_b_id));
- const ageGroupFromAthlete=x=>{if(!x)return '';const age=Number(String(x.age_text||'').match(/\d+/)?.[0]);if(!Number.isFinite(age))return '';if(age<=6)return '4–6 anos';if(age<=9)return '7–9 anos';if(age<=12)return '10–12 anos';if(age<=15)return '13–15 anos';if(age<=17)return '16–17 anos';return 'Adultos';};
- const beltFromAthlete=x=>{if(!x)return '';const raw=String(x.belt||'').toLowerCase();const colors=['branca','cinzenta','cinza','amarela','laranja','verde','azul','roxa','castanha','marrom','preta'];const found=colors.find(c=>raw.includes(c));return found?found.replace('cinzenta','cinza').replace('castanha','castanha').replace('marrom','castanha'):''};
- if(!cat||/^categoria$/i.test(cat)){
-  const belts=[beltFromAthlete(a),beltFromAthlete(b)].filter(Boolean);const ages=[ageGroupFromAthlete(a),ageGroupFromAthlete(b)].filter(Boolean);
-  const belt=belts[0]||'';const age=ages[0]||'';
-  cat=[age,belt?`Faixa ${belt}`:''].filter(Boolean).join(' · ')||'Categoria por definir';
+ const ageGroupFromAthlete=x=>{
+  if(!x)return '';
+  const age=Number(String(x.age_text||x.age||'').match(/\d+/)?.[0]);
+  if(!Number.isFinite(age))return '';
+  if(age<=6)return '4–6 anos';if(age<=9)return '7–9 anos';if(age<=12)return '10–12 anos';
+  if(age<=15)return '13–15 anos';if(age<=17)return '16–17 anos';return 'Adultos';
+ };
+ const beltFromAthlete=x=>{
+  if(!x)return '';
+  const s=String(x.belt||x.belt_text||'').toLowerCase();
+  const map=[['branca','branca'],['cinzenta','cinza'],['cinza','cinza'],['amarela','amarela'],['laranja','laranja'],['verde','verde'],['azul','azul'],['roxa','roxa'],['castanha','castanha'],['marrom','castanha'],['preta','preta']];
+  const found=map.find(([key])=>s.includes(key));return found?found[1]:'';
+ };
+ const ageA=ageGroupFromAthlete(a),ageB=ageGroupFromAthlete(b);
+ const beltA=beltFromAthlete(a),beltB=beltFromAthlete(b);
+ let cat=raw;
+ // Ignore old generic placeholders and compose a useful category label from athlete records.
+ if(!cat||/^(categoria|categoria\s*[·|/-]\s*ronda|ronda)$/i.test(cat)||/categoria\s*[·|/-]\s*ronda/i.test(cat)){
+  const age=ageA||ageB;const belt=beltA||beltB;
+  cat=[age,belt?`Faixa ${belt}`:''].filter(Boolean).join(' · ');
  }
- return cat;
+ // If stored category is generic/short, enrich it with age and belt without duplicating existing details.
+ if(cat){
+  if(ageA&&ageB&&ageA===ageB&&!cat.toLowerCase().includes(ageA.toLowerCase()))cat=`${cat} · ${ageA}`;
+  const belt=beltA||beltB;
+  if(belt&&!/branca|cinza|amarela|laranja|verde|azul|roxa|castanha|marrom|preta/i.test(cat))cat+=` · Faixa ${belt}`;
+ }
+ return cat||'Categoria por confirmar';
 }
+
 function matchReference(m){
  const cat=displayMatchCategory(m);
  const round=matchRoundLabel(m)||'Combate';
@@ -346,7 +374,10 @@ function renderScoreMatchOptions(){
 function renderScoreMatch(){
  const m=selectedScoreMatch();if(!m){$('scoreboardArena').classList.add('hidden');$('scoreboardEmpty').classList.remove('hidden');return}
  $('scoreboardEmpty').classList.add('hidden');$('scoreboardArena').classList.remove('hidden');
- document.querySelectorAll('#scoreMatchRef').forEach(el=>el.textContent=displayMatchCategory(m));$('scoreMatchStatus').textContent=statusLabel(m.status).toUpperCase();if($('scoreRoundLabel'))$('scoreRoundLabel').textContent=matchRoundLabel(m)||'Combate';
+ const categoryLabel=displayMatchCategory(m);
+ const categoryEl=$('scoreMatchRef');if(categoryEl)categoryEl.textContent=categoryLabel;
+ const phaseEl=$('scoreRoundLabel');if(phaseEl)phaseEl.textContent=matchRoundLabel(m);
+ const statusEl=$('scoreMatchStatus');if(statusEl)statusEl.textContent=statusLabel(m.status).toUpperCase();
  $('scoreNameA').textContent=m.fighter_a_name||'Atleta por definir';$('scoreNameB').textContent=m.fighter_b_name||'Atleta por definir';
  $('scoreTeamA').textContent=athletes.find(a=>a.id===m.fighter_a_id)?.team||'Equipa não indicada';$('scoreTeamB').textContent=athletes.find(a=>a.id===m.fighter_b_id)?.team||'Equipa não indicada';
  if(scoreLoadedMatchId!==String(m.id)){
