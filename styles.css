@@ -333,3 +333,31 @@ tbody tr:hover td{background:#fafcfc}
  .score-clock .score-duration{justify-content:flex-start}
 }
 @media(max-width:500px){.score-athlete-info h2{font-size:29px}.score-athlete-info p{font-size:17px}.score-tile span{font-size:8px;top:8px}.score-tile button{width:25px;height:25px}.score-add-buttons button{padding:7px 8px}.score-live-controls button{padding:8px 9px}}
+
+
+/* v26 hotfix: robust fullscreen sizing; keep all scoreboard panels visible */
+#scoreboard:fullscreen{position:fixed!important;inset:0!important;width:100vw!important;height:100vh!important;max-width:none!important;max-height:none!important;margin:0!important;padding:0!important;overflow:auto!important;background:#1b2733!important;z-index:2147483000!important;box-sizing:border-box!important}
+#scoreboard:fullscreen .scoreboard-toolbar{display:none!important}
+#scoreboard:fullscreen .scoreboard-arena{display:flex!important;flex-direction:column!important;width:100%!important;min-height:100vh!important;height:100vh!important;padding:0!important;margin:0!important;border-radius:0!important;overflow:auto!important;box-sizing:border-box!important;background:#1b2733!important}
+#scoreboard:fullscreen .scoreboard-main{display:flex!important;flex:1 1 auto!important;flex-direction:column!important;height:auto!important;min-height:0!important;padding:0!important;gap:0!important}
+#scoreboard:fullscreen .score-athlete-row{display:grid!important;flex:1 1 50%!important;grid-template-columns:minmax(250px,1fr) minmax(400px,1fr)!important;grid-template-rows:1fr auto!important;min-height:0!important;height:50%!important;padding:12px 1.5%!important;box-sizing:border-box!important;column-gap:20px!important}
+#scoreboard:fullscreen .score-athlete-info{grid-column:1!important;grid-row:1!important;align-self:center!important}
+#scoreboard:fullscreen .score-athlete-info h2{font-size:clamp(32px,3.2vw,64px)!important}
+#scoreboard:fullscreen .score-athlete-info p{font-size:clamp(18px,1.6vw,30px)!important}
+#scoreboard:fullscreen .score-metrics{display:grid!important;grid-column:2!important;grid-row:1 / span 2!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;align-items:stretch!important;gap:clamp(8px,1.4vw,24px)!important}
+#scoreboard:fullscreen .score-tile{display:flex!important;width:100%!important;height:100%!important;min-height:0!important;max-height:none!important;border-radius:7px!important}
+#scoreboard:fullscreen .score-tile b{font-size:clamp(64px,7vw,130px)!important}
+#scoreboard:fullscreen .score-tile span{font-size:clamp(10px,.9vw,14px)!important}
+#scoreboard:fullscreen .score-add-buttons{display:flex!important;grid-column:1!important;grid-row:2!important;align-self:start!important;margin-top:8px!important}
+#scoreboard:fullscreen .scoreboard-live-footer{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(320px,.8fr)!important;flex:0 0 auto!important;min-height:25vh!important;padding:16px 1.5% 20px!important;box-sizing:border-box!important}
+#scoreboard:fullscreen .score-clock .score-timer{font-size:clamp(80px,9.5vw,170px)!important}
+#scoreboard:fullscreen .scoreboard-bottom{display:grid!important;flex:0 0 auto!important;grid-template-columns:minmax(0,1fr) minmax(170px,.5fr) auto!important;padding:12px 1.5% 16px!important}
+#scoreboard:fullscreen .score-live-controls button{font-size:clamp(10px,.8vw,13px)!important}
+@media(max-width:900px){
+ #scoreboard:fullscreen .score-athlete-row{grid-template-columns:minmax(0,1fr)!important;grid-template-rows:auto auto auto!important;height:auto!important;min-height:0!important;gap:10px!important;padding:12px!important}
+ #scoreboard:fullscreen .score-athlete-info{grid-column:1!important;grid-row:1!important}
+ #scoreboard:fullscreen .score-metrics{grid-column:1!important;grid-row:2!important;height:clamp(110px,22vh,200px)!important}
+ #scoreboard:fullscreen .score-add-buttons{grid-column:1!important;grid-row:3!important}
+ #scoreboard:fullscreen .scoreboard-live-footer{grid-template-columns:1fr!important}
+ #scoreboard:fullscreen .score-clock{text-align:left!important}
+}

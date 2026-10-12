@@ -119,3 +119,9 @@ Substituir `index.html`, `styles.css` e `app.js` no repositório GitHub Pages pe
 - Controlos rápidos para adicionar pontos, vantagens e penalizações, iniciar/pausar/reiniciar o tempo, trocar cores e emitir um alerta sonoro.
 - A seleção de vencedor e gravação final continuam na área inferior do marcador.
 - O botão de trocar cores altera a apresentação visual dos lados no ecrã; não altera os atletas nem a pontuação registada.
+
+
+## Versão 26 — correção de ecrã inteiro
+- Corrigido o dimensionamento em ecrã inteiro com regras explícitas para ocupar 100% da largura e altura do ecrã.
+- Atualizada a versão da folha de estilos e do JavaScript na URL para forçar a renovação da cache do navegador.
+- Reforçada a apresentação das duas faixas de atletas, cartões de pontuação e cronómetro no modo de ecrã inteiro.
