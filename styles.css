@@ -89,3 +89,13 @@
   body.athlete-form-open .athlete-form-actions button{min-height:50px;font-size:14px}
   body.athlete-form-open #athleteFormMsg{padding-bottom:8px;overflow-wrap:anywhere}
 }
+
+/* Gestão de atletas: filtros e eliminação */
+.athlete-filters{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:12px 0 18px}
+.athlete-filters label{display:flex;flex-direction:column;gap:6px;font-size:.85rem;font-weight:600}
+.athlete-filters select{width:100%;min-width:0;padding:11px;border:1px solid var(--border,#d6dbe1);border-radius:10px;background:var(--surface,#fff);color:inherit}
+.button-danger{background:#a92e35;color:#fff;border:0;border-radius:9px;padding:10px 13px;font-weight:700;cursor:pointer}
+.button-danger.small{padding:6px 9px;font-size:.78rem}
+.athlete-mobile-actions{display:flex;gap:8px;flex-wrap:wrap}
+.athlete-mobile-actions button{min-height:42px;flex:1}
+@media(max-width:650px){.athlete-filters{grid-template-columns:1fr;gap:8px}.athlete-filters select{min-height:44px}.athlete-mobile-actions{width:100%}.athlete-mobile-actions button{min-height:46px}}
