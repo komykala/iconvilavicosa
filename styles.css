@@ -144,3 +144,35 @@
 @media(max-width:650px){.athlete-category-choice{align-items:flex-start;flex-direction:column;gap:5px}.main-nav .tab{white-space:nowrap}}
 
 .auto-bracket-option{display:flex;align-items:flex-start;gap:10px;margin:12px 0;padding:12px 14px;border:1px solid var(--line,#dce2e7);border-radius:12px;background:var(--surface,#f8fafb);font-size:.94rem;line-height:1.4}.auto-bracket-option input{margin-top:3px;flex:0 0 auto}
+
+
+/* Bracket viewer inspired by tournament bracket apps; responsive and touch friendly */
+.bracket-mode-tabs{display:flex;gap:8px;border-bottom:1px solid #e2e7ea;margin:12px 0 10px;padding-bottom:10px}
+.bracket-mode{border:1px solid #dfe5e8;background:#fff;color:#65717b;border-radius:999px;padding:9px 18px;font-weight:800;cursor:pointer}
+.bracket-mode.active{background:#111920;color:#fff;border-color:#111920}
+.bracket-round-tabs{display:flex;gap:7px;overflow-x:auto;padding:4px 0 12px;scrollbar-width:thin}
+.bracket-round-pill{white-space:nowrap;border:1px solid #dfe5e8;background:#fff;color:#65717b;border-radius:999px;padding:8px 13px;font-size:12px;font-weight:800;cursor:pointer}
+.bracket-round-pill.active{background:#b08b42;border-color:#b08b42;color:#fff}
+.bracket-boards{align-items:stretch;gap:16px;overflow-x:auto;overscroll-behavior-x:contain;padding:8px 4px 18px;scroll-snap-type:x proximity}
+.bracket-board{scroll-snap-align:start;min-width:250px;max-width:310px}
+.bracket-board h3{font-size:14px;margin-bottom:12px}
+.bracket-rounds{display:flex;align-items:stretch;gap:13px}
+.round-column{flex:0 0 225px;min-width:225px;gap:14px}
+.round-column .round-label{text-align:center;font-size:11px;border-radius:7px;margin-bottom:2px}
+.bracket-card{position:relative;border-radius:10px;background:#fff;box-shadow:0 2px 7px #1018200a}
+.bracket-card-head{display:flex;justify-content:space-between;align-items:center;gap:6px;padding:7px 9px;background:#f2f4f5;color:#68747d;font-size:10px;font-weight:800}
+.bracket-status{border-radius:99px;padding:3px 6px;background:#e9edf0;white-space:nowrap}
+.bracket-status.done{background:#e4f4e9;color:#176b46}
+.bracket-fighter{width:100%;border:0;text-align:left;display:flex;align-items:center;justify-content:space-between;gap:7px;min-height:39px;padding:9px 10px;font-size:12px;line-height:1.25;overflow-wrap:anywhere;background:#fff;color:#17212a;cursor:pointer}
+.bracket-fighter span{min-width:0}
+.bracket-fighter+.bracket-fighter{border-top:1px solid #e7eaec}
+.bracket-fighter.winner{font-weight:850;background:#e8f5ec;color:#176b46}
+.bracket-connector{flex:0 0 14px;align-self:center;height:34px;border-top:2px solid #d7dde1;border-right:2px solid #d7dde1;border-bottom:2px solid #d7dde1;margin-top:30px}
+.bracket-results{display:flex;flex-direction:column;gap:9px}
+.bracket-result-row{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:13px;border:1px solid #e1e6e8;border-radius:11px;background:#fff}
+.bracket-result-row small{color:#7a8790;font-size:10px;font-weight:800;letter-spacing:.04em}
+.bracket-result-row p{margin:7px 0 0;font-size:13px;font-weight:750}
+.bracket-result-row p span{color:#9aa4ac;font-weight:500}
+.bracket-result-winner{display:flex;flex-direction:column;gap:4px;min-width:100px;text-align:right}
+.bracket-result-winner strong{font-size:13px;color:#176b46}
+@media(max-width:600px){.bracket-viewer{padding:14px}.bracket-viewer .section-head{align-items:stretch;flex-direction:column}.bracket-viewer .section-head select{width:100%}.bracket-board{min-width:0;max-width:none}.bracket-rounds{gap:10px}.round-column{flex-basis:205px;min-width:205px}.bracket-result-row{align-items:flex-start;flex-direction:column}.bracket-result-winner{text-align:left}.bracket-boards{margin-right:-4px}}
