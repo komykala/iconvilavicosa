@@ -76,3 +76,7 @@ No formulário de novo atleta existe a opção «Após guardar, preparar automat
 - Ao editar um atleta, o nome atualizado é propagado para os nomes dos participantes e vencedor em todos os combates associados por ID, para que filas, resultados e quadros apresentem os dados atualizados após recarregar.
 - Para atletas sem sexo registado, a aplicação tenta inferir o sexo através de uma lista conservadora de primeiros nomes comuns em português. A inferência só é aplicada quando o campo está vazio/nulo; pode ser corrigida manualmente no formulário do atleta. Nomes ambíguos ou não reconhecidos ficam sem sexo atribuído.
 - A inferência automática é uma estimativa baseada no nome, não uma confirmação da identidade ou do sexo do atleta. Verifique os registos antes de gerar combates de adultos.
+
+
+### Visualização de chaves
+A área de chaves mostra desde logo todos os combates existentes. Os combates ligados a um `bracket_id` usam a chave real; os restantes são agrupados provisoriamente pela categoria para que não apareça uma área vazia. A ronda é lida de `round_number` (ou assumida como ronda 1 quando não está definida). Para mostrar ligações exatas entre rondas, os combates devem ter os campos de progressão da chave corretamente preenchidos.

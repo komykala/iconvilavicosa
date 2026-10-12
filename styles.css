@@ -176,3 +176,5 @@
 .bracket-result-winner{display:flex;flex-direction:column;gap:4px;min-width:100px;text-align:right}
 .bracket-result-winner strong{font-size:13px;color:#176b46}
 @media(max-width:600px){.bracket-viewer{padding:14px}.bracket-viewer .section-head{align-items:stretch;flex-direction:column}.bracket-viewer .section-head select{width:100%}.bracket-board{min-width:0;max-width:none}.bracket-rounds{gap:10px}.round-column{flex-basis:205px;min-width:205px}.bracket-result-row{align-items:flex-start;flex-direction:column}.bracket-result-winner{text-align:left}.bracket-boards{margin-right:-4px}}
+
+.bracket-provisional{font-size:.72em;font-weight:500;color:var(--muted,#718096)}
