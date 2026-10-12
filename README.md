@@ -125,3 +125,12 @@ Substituir `index.html`, `styles.css` e `app.js` no repositório GitHub Pages pe
 - Corrigido o dimensionamento em ecrã inteiro com regras explícitas para ocupar 100% da largura e altura do ecrã.
 - Atualizada a versão da folha de estilos e do JavaScript na URL para forçar a renovação da cache do navegador.
 - Reforçada a apresentação das duas faixas de atletas, cartões de pontuação e cronómetro no modo de ecrã inteiro.
+
+
+## Versão 27 — fim automático de combate
+- Em ecrã inteiro, a secção manual de seleção de vencedor/registo de resultado fica oculta.
+- Quando o cronómetro chega a zero, é emitido automaticamente um sinal sonoro, a pontuação é usada para determinar o vencedor (pontos; em igualdade, vantagens; em nova igualdade, menos penalizações) e o resultado é guardado.
+- O vencedor avança para a ronda seguinte quando a chave tem ligação configurada.
+- Dois minutos após o fim, o próximo combate pronto é carregado no marcador, mas o cronómetro não inicia sozinho: a mesa deve confirmar que os atletas estão prontos e carregar em Iniciar.
+- Se pontos, vantagens e penalizações ficarem exatamente iguais, o resultado não é decidido automaticamente; a mesa tem de aplicar as regras da competição e confirmar o vencedor.
+- O navegador precisa de permitir áudio. O sinal é gerado localmente no momento em que o cronómetro termina.

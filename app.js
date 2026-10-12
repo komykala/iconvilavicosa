@@ -319,7 +319,7 @@ function selectedScoreMatch(){return matches.find(m=>String(m.id)===String(score
 function formatTimer(seconds){const s=Math.max(0,Math.ceil(seconds));return `${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`}
 function paintTimer(){const el=$('scoreTimer');if(el)el.textContent=formatTimer(scoreRemaining);if($('scoreTimerState'))$('scoreTimerState').textContent=scoreRunning?'A DECORRER':scoreRemaining<=0?'TEMPO ESGOTADO':'EM PAUSA / PRONTO'}
 function stopScoreTimer(){scoreRunning=false;if(scoreTicker){clearInterval(scoreTicker);scoreTicker=null}paintTimer()}
-function startScoreTimer(){if(!selectedScoreMatch()){toast('Selecione primeiro um combate.');return}if(scoreRemaining<=0)scoreRemaining=Math.max(1,Number($('scoreDuration').value)||6)*60;if(scoreRunning)return;scoreRunning=true;scoreEndAt=Date.now()+scoreRemaining*1000;scoreTicker=setInterval(()=>{scoreRemaining=Math.max(0,(scoreEndAt-Date.now())/1000);paintTimer();if(scoreRemaining<=0){stopScoreTimer();toast('Tempo terminado!')}},100);paintTimer();const m=selectedScoreMatch();if(m&&m.status!=='in_progress')setStatus(m.id,'in_progress')}
+function startScoreTimer(){if(!selectedScoreMatch()){toast('Selecione primeiro um combate.');return}if(scoreRemaining<=0)scoreRemaining=Math.max(1,Number($('scoreDuration').value)||6)*60;if(scoreRunning)return;scoreRunning=true;scoreEndAt=Date.now()+scoreRemaining*1000;scoreTicker=setInterval(()=>{scoreRemaining=Math.max(0,(scoreEndAt-Date.now())/1000);paintTimer();if(scoreRemaining<=0){stopScoreTimer();playFightEndSound();toast('Tempo terminado! A registar o resultado…');autoFinishFight()}},100);paintTimer();const m=selectedScoreMatch();if(m&&m.status!=='in_progress')setStatus(m.id,'in_progress')}
 function resetScoreTimer(){stopScoreTimer();scoreRemaining=Math.max(1,Number($('scoreDuration').value)||6)*60;paintTimer()}
 function changeScore(side,field,delta){if(!selectedScoreMatch()){toast('Selecione primeiro um combate.');return}scoreState[side][field]=Math.max(0,Number(scoreState[side][field]||0)+Number(delta));paintScore()}
 function paintScore(){for(const side of ['a','b'])for(const field of ['points','advantages','penalties']){const el=$(`score${field[0].toUpperCase()+field.slice(1)}${side.toUpperCase()}`);if(el)el.textContent=scoreState[side][field]}}
@@ -343,19 +343,52 @@ function renderScoreMatch(){
  }
  paintScore();paintTimer()
 }
-async function saveScoreboardResult(){
+function determineScoreWinner(){
+ const a=scoreState.a,b=scoreState.b;
+ if(a.points!==b.points)return a.points>b.points?'a':'b';
+ if(a.advantages!==b.advantages)return a.advantages>b.advantages?'a':'b';
+ if(a.penalties!==b.penalties)return a.penalties<b.penalties?'a':'b';
+ return '';
+}
+function playFightEndSound(){
+ try{
+  const C=window.AudioContext||window.webkitAudioContext;if(!C)return;
+  const ctx=new C();const now=ctx.currentTime;
+  // Short three-note bell/buzzer pattern, generated locally (no external audio file).
+  [880,1175,880,1175].forEach((freq,i)=>{const osc=ctx.createOscillator(),gain=ctx.createGain(),t=now+i*.22;osc.type=i%2?'sine':'triangle';osc.frequency.setValueAtTime(freq,t);gain.gain.setValueAtTime(.001,t);gain.gain.exponentialRampToValueAtTime(.32,t+.025);gain.gain.exponentialRampToValueAtTime(.001,t+.19);osc.connect(gain);gain.connect(ctx.destination);osc.start(t);osc.stop(t+.2)});
+  setTimeout(()=>ctx.close(),1300);
+ }catch(e){console.warn('Não foi possível emitir sinal sonoro',e)}
+}
+async function autoFinishFight(){
+ const m=selectedScoreMatch();if(!m||m.status==='completed')return;
+ const side=determineScoreWinner();
+ if(!side){$('scoreMsg').textContent='Empate no marcador: resultado não foi fechado automaticamente. Confirme o vencedor de acordo com as regras da prova.';toast('Empate no marcador. É necessária decisão da mesa.');return}
+ $('scoreWinner').value=side;
+ await saveScoreboardResult({sideOverride:side,automatic:true});
+}
+async function saveScoreboardResult(options={}){
  const m=selectedScoreMatch();if(!m){toast('Selecione um combate.');return}
- const side=$('scoreWinner').value;if(!side){toast('Selecione o vencedor antes de guardar.');return}
+ const side=options.sideOverride||$('scoreWinner').value;if(!side){toast('Selecione o vencedor antes de guardar.');return}
  const winnerId=side==='a'?m.fighter_a_id:m.fighter_b_id;const winnerName=side==='a'?m.fighter_a_name:m.fighter_b_name;
  if(!winnerId){toast('O vencedor selecionado ainda não está atribuído ao combate.');return}
  const payload={status:'completed',winner_id:winnerId,winner_name:winnerName,completed_at:new Date().toISOString(),score_a:scoreState.a.points,score_b:scoreState.b.points,advantages_a:scoreState.a.advantages,advantages_b:scoreState.b.advantages,penalties_a:scoreState.a.penalties,penalties_b:scoreState.b.penalties};
- const btn=$('scoreSaveResult');btn.disabled=true;$('scoreMsg').textContent='A guardar resultado…';stopScoreTimer();
+ const btn=$('scoreSaveResult');if(btn)btn.disabled=true;$('scoreMsg').textContent=options.automatic?'Tempo terminado — a guardar resultado automaticamente…':'A guardar resultado…';stopScoreTimer();
  try{
   const {error}=await db.from('matches').update(payload).eq('id',m.id);
   if(error){if(/score_a|advantages_a|penalties_a|column/i.test(error.message))throw new Error('Execute primeiro migration_scoreboard_v24.sql no SQL Editor do Supabase. '+error.message);throw error}
   if(m.next_match_id){const next=matches.find(x=>x.id===m.next_match_id);if(next){const slot=m.next_slot==='B'?'b':'a';const up=await db.from('matches').update(slot==='a'?{fighter_a_id:winnerId,fighter_a_name:winnerName}:{fighter_b_id:winnerId,fighter_b_name:winnerName}).eq('id',next.id);if(up.error)toast('Resultado guardado, mas não foi possível avançar o vencedor: '+up.error.message);else await maybeAutoBye(next.id)}}
-  toast('Resultado e pontuação guardados.');$('scoreMsg').textContent='Resultado guardado com sucesso.';scoreMatchId='';scoreLoadedMatchId='';await load()
- }catch(e){$('scoreMsg').textContent='Não foi possível guardar: '+e.message;toast('Falha ao guardar resultado.')}finally{btn.disabled=false}
+  toast(options.automatic?'Tempo terminado: resultado guardado.':'Resultado e pontuação guardados.');$('scoreMsg').textContent=options.automatic?'Resultado guardado automaticamente. Próximo combate em 2 minutos.':'Resultado guardado com sucesso.';
+  if(options.automatic){
+   const completedId=String(m.id);
+   await load();
+   setTimeout(async()=>{
+    const pending=matches.filter(x=>String(x.id)!==completedId&&!['completed','cancelled'].includes(x.status)&&x.fighter_a_id&&x.fighter_b_id)
+      .sort((a,b)=>Number(a.mat||9)-Number(b.mat||9)||(a.round_number||1)-(b.round_number||1)||String(a.category||'').localeCompare(String(b.category||'')));
+    if(pending.length){scoreMatchId=String(pending[0].id);scoreLoadedMatchId='';const sel=$('scoreMatchSelect');if(sel){renderScoreMatchOptions();sel.value=scoreMatchId}renderScoreMatch();resetScoreTimer();toast('Próximo combate carregado no marcador.');$('scoreMsg').textContent='Próximo combate carregado. Aguarda a mesa para iniciar o cronómetro.'}
+    else{$('scoreMsg').textContent='Não existem mais combates prontos para carregar.';toast('Não existem mais combates prontos.')}
+   },120000);
+  }else{scoreMatchId='';scoreLoadedMatchId='';await load()}
+ }catch(e){$('scoreMsg').textContent='Não foi possível guardar: '+e.message;toast('Falha ao guardar resultado.')}finally{if(btn)btn.disabled=false}
 }
 async function toggleScoreFullscreen(){const el=$('scoreboard');try{if(!document.fullscreenElement){await el.requestFullscreen();document.body.classList.add('score-fullscreen-active')}else{await document.exitFullscreen();document.body.classList.remove('score-fullscreen-active')}}catch(e){toast('O modo de ecrã inteiro não está disponível neste navegador.')}}
 

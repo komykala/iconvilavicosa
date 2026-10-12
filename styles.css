@@ -361,3 +361,13 @@ tbody tr:hover td{background:#fafcfc}
  #scoreboard:fullscreen .scoreboard-live-footer{grid-template-columns:1fr!important}
  #scoreboard:fullscreen .score-clock{text-align:left!important}
 }
+
+/* v27 — broadcast mode: hide manual winner/result controls while fullscreen */
+#scoreboard:fullscreen .scoreboard-bottom{display:none!important}
+#scoreboard:fullscreen .scoreboard-arena{height:100vh!important;min-height:100vh!important;overflow:hidden!important}
+#scoreboard:fullscreen .scoreboard-live-footer{min-height:27vh!important}
+#scoreboard:fullscreen .scoreboard-main{height:63vh!important;flex:1 1 63vh!important}
+#scoreboard:fullscreen .score-athlete-row{min-height:0!important;height:50%!important}
+#scoreboard:fullscreen .score-tile{height:100%!important}
+#scoreboard:fullscreen .score-live-details strong{margin:6px 0 10px!important}
+#scoreboard:fullscreen .score-live-controls{gap:6px!important}
