@@ -75,6 +75,31 @@ async function deleteAthlete(id){const a=athletes.find(x=>x.id===id);if(!a)retur
 function openAthleteForm(id=null){const a=id?athletes.find(x=>x.id===id):null;$('athleteForm').reset();$('athleteEditId').value=a?.id||'';$('athleteFormTitle').textContent=a?'Editar atleta':'Adicionar atleta';$('saveAthlete').textContent=a?'Guardar alterações':'Guardar atleta';$('athleteFormMsg').textContent='';$('athleteName').value=a?.display_name||'';$('athleteEmail').value=a?.email||'';$('athleteTeam').value=a?.team||'';$('athleteAge').value=a?.age_text||'';$('athleteBelt').value=a?.belt||'';$('athleteWeight').value=a?.weight_text||'';$('athleteGender').value=normalizeGender(a?.gender);$('athleteFormPanel').classList.remove('hidden');document.body.classList.add('athlete-form-open');$('athleteFormPanel').scrollIntoView({behavior:'smooth',block:'start'});setTimeout(()=>$('athleteName').focus(),150)}
 function editAthlete(id){document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x.dataset.tab==='athletes'));document.querySelectorAll('.pane').forEach(x=>x.classList.toggle('hidden',x.id!=='athletes'));openAthleteForm(id)}
 function closeAthleteForm(){$('athleteFormPanel').classList.add('hidden');document.body.classList.remove('athlete-form-open');$('athleteFormMsg').textContent=''}
+function athleteAgeGroup(a){
+ const raw=String(a?.age_text||'').toLowerCase();
+ const nums=(raw.match(/\d+/g)||[]).map(Number);
+ const age=nums.length?nums[0]:null;
+ if(age===null)return raw.trim()||'Idade por definir';
+ if(age<=6)return '4–6';if(age<=9)return '7–9';if(age<=12)return '10–12';if(age<=15)return '13–15';return '16+';
+}
+function normalizedBelt(a){return String(a?.belt||'').trim()}
+async function refreshBracketCategoriesForAthlete(athleteId){
+ const linked=matches.filter(m=>m.bracket_id&&(m.fighter_a_id===athleteId||m.fighter_b_id===athleteId));
+ const bracketIds=[...new Set(linked.map(m=>m.bracket_id))];
+ for(const bid of bracketIds){
+  const group=matches.filter(m=>String(m.bracket_id)===String(bid));
+  const ids=[...new Set(group.flatMap(m=>[m.fighter_a_id,m.fighter_b_id]).filter(Boolean))];
+  const members=ids.map(id=>athletes.find(a=>a.id===id)).filter(Boolean);
+  if(!members.length)continue;
+  const belts=[...new Set(members.map(normalizedBelt).filter(Boolean))];
+  const ageGroups=[...new Set(members.map(athleteAgeGroup))];
+  let category;
+  if(belts.length===1&&ageGroups.length===1)category=`${ageGroups[0]} · ${belts[0]}`;
+  else category=`REVER CATEGORIA · ${[...ageGroups,...belts].join(' · ')||'Dados em falta'}`;
+  const updates=await db.from('matches').update({category}).eq('bracket_id',bid);
+  if(updates.error)throw new Error('Os dados do atleta foram guardados, mas não foi possível atualizar a categoria da chave: '+updates.error.message);
+ }
+}
 async function saveAthleteForm(e){
  e.preventDefault();
  const id=$('athleteEditId').value, name=$('athleteName').value.trim(), autoAssign=!id&&$('autoAssignBracket')?.checked;
@@ -97,8 +122,11 @@ async function saveAthleteForm(e){
    const linkedA=await db.from('matches').update({fighter_a_name:name}).eq('fighter_a_id',id);if(linkedA.error)throw linkedA.error;
    const linkedB=await db.from('matches').update({fighter_b_name:name}).eq('fighter_b_id',id);if(linkedB.error)throw linkedB.error;
    const linkedWinner=await db.from('matches').update({winner_name:name}).eq('winner_id',id);if(linkedWinner.error)throw linkedWinner.error;
+   const refreshed=await db.from('athletes').select('*').order('display_name');if(refreshed.error)throw refreshed.error;
+   athletes=(refreshed.data||[]).map(normalizeAthlete);
+   await refreshBracketCategoriesForAthlete(id);
   }
-  $('athleteFormMsg').textContent='Sexo guardado e confirmado na base de dados.';
+  $('athleteFormMsg').textContent='Dados guardados; as categorias das chaves foram atualizadas.';
   toast('Atleta atualizado; sexo confirmado.');
   closeAthleteForm();await load();
   if(autoAssign&&athleteId)await autoPrepareBracket(athleteId);

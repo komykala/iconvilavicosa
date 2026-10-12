@@ -32,10 +32,17 @@
   </section>
   <section id="tournament-view" class="pane hidden">
     <div class="section-head"><div><span class="section-kicker">07 · VISUALIZAÇÃO DE PROVA</span><h2>Chaves do torneio</h2><p>Consulte as chaves, rondas e resultados por categoria.</p></div></div>
-    <div class="panel subpanel bracket-viewer"><div class="section-head"><div><span class="section-kicker">CHAVES E RESULTADOS</span><h2>Visualização da prova</h2><p>Consulte o percurso por categoria, ronda e resultado, com navegação horizontal adaptada ao telemóvel.</p></div><select id="bracketView" aria-label="Selecionar categoria"><option value="all">Todas as categorias</option></select></div><div class="bracket-mode-tabs"><button type="button" class="bracket-mode active" data-bracket-mode="bracket">Chave</button><button type="button" class="bracket-mode" data-bracket-mode="results">Resultados</button></div><div id="bracketRoundTabs" class="bracket-round-tabs"></div><div id="bracketBoards" class="bracket-boards"></div><div id="bracketResults" class="bracket-results hidden"></div></div>
+    <div class="panel subpanel bracket-viewer"><div class="section-head"><div><span class="section-kicker">CHAVES E RESULTADOS</span><h2>Visualização da prova</h2><p>Consulte o percurso por categoria, ronda e resultado, com navegação horizontal adaptada ao telemóvel.</p></div><select id="bracketView" aria-label="Selecionar categoria"><option value="all">Todas as categorias</option></select></div>
+    <div class="bracket-filters">
+      <label>Pesquisar atleta ou combate<input id="bracketSearch" type="search" placeholder="Nome, email, código…"></label>
+      <label>Faixa<select id="bracketBeltFilter"><option value="all">Todas as faixas</option></select></label>
+      <label>Estado<select id="bracketStatusFilter"><option value="all">Todos os estados</option><option value="pending">Por chamar</option><option value="called">Chamados</option><option value="in_progress">A decorrer</option><option value="waiting">Em espera</option><option value="completed">Concluídos</option><option value="cancelled">Cancelados</option></select></label>
+      <button id="clearBracketFilters" type="button" class="button-light small">Limpar filtros</button>
+    </div>
+    <div class="bracket-mode-tabs"><button type="button" class="bracket-mode active" data-bracket-mode="bracket">Chave</button><button type="button" class="bracket-mode" data-bracket-mode="results">Resultados</button></div><div id="bracketRoundTabs" class="bracket-round-tabs"></div><div id="bracketBoards" class="bracket-boards"></div><div id="bracketResults" class="bracket-results hidden"></div></div>
   </section>
   <footer class="app-footer"><span>ICON JIU-JITSU · TOURNAMENT CONTROL</span><div><span id="sessionEmail"></span><button id="signOut" class="text-button">Terminar sessão ↗</button></div></footer>
 </section>
 </main><div id="toast" role="status" aria-live="polite"></div>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="app.js?v=19"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="app.js?v=21"></script>
 </body></html>
