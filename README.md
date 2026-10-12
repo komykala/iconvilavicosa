@@ -1,4 +1,4 @@
-# ICON Jiu-Jitsu — Tournament Control v2
+# ICON Jiu-Jitsu — Tournament Control v23
 
 Interface responsiva para gerir check-in, pesagem, atletas, dois tatames e quadros de eliminação direta com avanço automático de vencedores.
 
@@ -17,6 +17,8 @@ Interface responsiva para gerir check-in, pesagem, atletas, dois tatames e quadr
 - Painéis dos Tatames 1 e 2 com estados por chamar, chamados e a decorrer.
 - Combates manuais.
 - Geração de quadro de eliminação direta a partir de atletas selecionados, com byes e rondas.
+- Regras de categorias: adultos de faixa azul e roxa separados; adultos de faixa preta e castanha podem ser agrupados; faixas amarela e cinzenta agrupadas.
+- Validação de escalão etário, sexo nos adultos e diferença de peso antes de criar um quadro; limite de 8 kg para adultos de faixa azul/roxa.
 - Quando se confirma um vencedor, este é colocado no lugar correspondente da ronda seguinte. Byes podem avançar automaticamente.
 - Recuperação de palavra-passe com redirecionamento para o URL publicado e formulário para definir a nova palavra-passe.
 - Sincronização Supabase Realtime.
@@ -80,3 +82,33 @@ No formulário de novo atleta existe a opção «Após guardar, preparar automat
 
 ### Visualização de chaves
 A área de chaves mostra desde logo todos os combates existentes. Os combates ligados a um `bracket_id` usam a chave real; os restantes são agrupados provisoriamente pela categoria para que não apareça uma área vazia. A ronda é lida de `round_number` (ou assumida como ronda 1 quando não está definida). Para mostrar ligações exatas entre rondas, os combates devem ter os campos de progressão da chave corretamente preenchidos.
+
+## Regra de agrupamento de faixas
+- As faixas amarelas e cinzentas são consideradas um único grupo de emparelhamento (`Amarela/Cinzenta`) na preparação automática e na atualização da categoria da chave.
+- A faixa original de cada atleta continua guardada no registo; não são alterados os dados originais.
+- Idade/escalão e diferença de peso continuam a ser critérios de compatibilidade.
+
+## Regra de agrupamento de faixas
+- As faixas amarelas e cinzentas são consideradas um único grupo de emparelhamento (`Amarela/Cinzenta`) na preparação automática e na atualização da categoria da chave.
+- A faixa original de cada atleta continua guardada no registo; não são alterados os dados originais.
+- Idade/escalão e diferença de peso continuam a ser critérios de compatibilidade.
+
+
+## Versão 24 — interface e mesa de pontos
+
+### Melhorias visuais
+- Navegação mais legível, contraste e hierarquia visual reforçados, cartões e tabelas com maior separação.
+- Referências de combate passam a mostrar categoria, fase/ronda e tatame; o código técnico fica apenas como referência secundária quando disponível.
+
+### Mesa de pontos em ecrã inteiro
+- Nova secção **08 · Mesa de pontos**.
+- Selecionar o combate; iniciar, pausar e reiniciar o temporizador; duração configurável.
+- Pontuação por atleta (+2, +3, +4 e correção de -1), vantagens e penalizações.
+- Escolha manual do vencedor e gravação na cloud; em quadros ligados, o vencedor avança para a ronda seguinte.
+- O temporizador funciona no dispositivo da mesa e não sincroniza o relógio entre dispositivos. A pontuação só é persistida quando se guarda o resultado.
+
+### Migração necessária para a pontuação
+Antes de utilizar o botão **Guardar resultado final**, executar `migration_scoreboard_v24.sql` no SQL Editor do Supabase. A migração apenas acrescenta colunas à tabela `matches`; não elimina nem reinicia dados existentes.
+
+### Publicação
+Substituir `index.html`, `styles.css` e `app.js` no repositório GitHub Pages pelos ficheiros desta versão. Manter o restante conteúdo e a configuração Supabase existente. A aplicação não foi publicada automaticamente.
