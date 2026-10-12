@@ -86,30 +86,23 @@ async function saveAthleteForm(e){
  $('saveAthlete').disabled=true;$('athleteFormMsg').textContent='A guardar os dados do atleta…';
  try{
   let athleteId=id;
-  if(id){
-   const {error}=await db.from('athletes').update(payload).eq('id',id);
-   if(error)throw error;
-  }else{
-   const {data,error}=await db.from('athletes').insert(payload).select('id').single();
-   if(error)throw error;athleteId=data.id;
-  }
-  // Guardar sexo numa operação separada para identificar claramente falhas de coluna/permissões.
-  const genderResult=await db.from('athletes').update({gender}).eq('id',athleteId).select('id,gender').single();
-  if(genderResult.error){
-   const msg=genderResult.error.message||'Erro desconhecido';
-   if(/column .*gender|gender.*does not exist|schema cache/i.test(msg))throw new Error('A base de dados ainda não reconhece a coluna gender. No Supabase, execute migration_gender_adult_matches.sql e atualize o schema cache. Detalhe: '+msg);
-   throw new Error('Os restantes dados foram guardados, mas o sexo não foi guardado. Verifique as permissões UPDATE da tabela athletes no Supabase. Detalhe: '+msg);
-  }
-  if(genderResult.data?.gender!==gender)throw new Error('O Supabase não confirmou o sexo escolhido. Atualize a página e verifique as permissões e a coluna gender.');
+  if(id){const {error}=await db.from('athletes').update(payload).eq('id',id);if(error)throw error}
+  else{const {data,error}=await db.from('athletes').insert(payload).select('id').single();if(error)throw error;athleteId=data.id}
+  // Explicitly persist and read back gender so a failed write cannot be reported as success.
+  const {data:genderRow,error:genderError}=await db.from('athletes').update({gender}).eq('id',athleteId).select('id,gender').maybeSingle();
+  if(genderError)throw new Error('Não foi possível guardar o sexo. Verifique a coluna gender e as permissões de atualização no Supabase. '+genderError.message);
+  if(!genderRow)throw new Error('O Supabase não confirmou a atualização do atleta. Verifique as políticas RLS (UPDATE) da tabela athletes.');
+  if((genderRow.gender||null)!==gender)throw new Error('O sexo devolvido pela base de dados é diferente do selecionado. O valor não foi confirmado.');
   if(id){
    const linkedA=await db.from('matches').update({fighter_a_name:name}).eq('fighter_a_id',id);if(linkedA.error)throw linkedA.error;
    const linkedB=await db.from('matches').update({fighter_b_name:name}).eq('fighter_b_id',id);if(linkedB.error)throw linkedB.error;
    const linkedWinner=await db.from('matches').update({winner_name:name}).eq('winner_id',id);if(linkedWinner.error)throw linkedWinner.error;
   }
-  $('athleteFormMsg').textContent=id?'Dados e sexo guardados com confirmação da base de dados.':'Atleta adicionado e dados guardados.';
-  toast(id?'Atleta atualizado.':'Atleta adicionado.');closeAthleteForm();await load();
+  $('athleteFormMsg').textContent='Sexo guardado e confirmado na base de dados.';
+  toast('Atleta atualizado; sexo confirmado.');
+  closeAthleteForm();await load();
   if(autoAssign&&athleteId)await autoPrepareBracket(athleteId);
- }catch(err){$('athleteFormMsg').textContent='Não foi possível concluir a gravação: '+err.message;toast('Erro ao guardar: '+err.message)}
+ }catch(err){$('athleteFormMsg').textContent='ERRO AO GUARDAR: '+err.message;toast('Sexo não confirmado: '+err.message)}
  finally{$('saveAthlete').disabled=false}
 }
 function fillAthleteSelects(){['a','b'].forEach(id=>{const old=$(id).value;$(id).innerHTML='<option value="">Escolher atleta…</option>'+athletes.map(a=>`<option value="${a.id}">${esc(a.display_name)} — ${esc(a.id.slice(0,8))}</option>`).join('');$(id).value=old})}
