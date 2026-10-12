@@ -44,7 +44,10 @@
 
 
 /* Athlete management: compact desktop table, touch-friendly mobile cards */
-.athlete-search-mobile{display:none;margin:0 0 12px}
+.athlete-search-mobile{display:block;margin:14px 0 12px;max-width:720px}
+.athlete-search-mobile input{display:block;width:100%;min-height:48px;padding:12px 15px;border:1px solid var(--border,#d6dbe1);border-radius:12px;background:var(--surface,#fff);color:inherit;font:inherit;box-sizing:border-box;box-shadow:0 2px 8px #10182008}
+.athlete-search-mobile input:focus{outline:3px solid #d9e9f4;border-color:#718fa2}
+.athlete-search-mobile::before{content:"Pesquisar por nome, email, faixa, equipa, idade ou peso";display:block;margin-bottom:7px;font-size:.82rem;font-weight:700;color:#687681}
 .athlete-mobile-list{display:none}
 .athlete-mobile-card{background:#fff;border:1px solid #e2e7e9;border-radius:13px;padding:14px;margin:9px 0;box-shadow:0 2px 8px #10182008}
 .athlete-mobile-main{display:flex;flex-direction:column;gap:6px;min-width:0}
@@ -55,7 +58,6 @@
 .athlete-mobile-bottom .primary{min-height:44px;padding:10px 16px}
 .athlete-form-panel{z-index:30}
 @media(max-width:700px){
-  .athlete-search-mobile{display:block}
   .athlete-mobile-list{display:block}
   .athlete-desktop-table{display:none}
   .athlete-head-actions{width:100%;display:grid;grid-template-columns:1fr 1fr}
@@ -121,7 +123,7 @@
 @media(max-width:700px){.quick-call-grid{grid-template-columns:minmax(0,1fr);gap:12px}.qc-mat{padding:13px;border-radius:15px}.qc-head h3{font-size:21px}.qc-step{padding:11px}.qc-athletes{font-size:13px;gap:6px}.qc-primary,.qc-secondary{min-height:64px}.qc-result button{min-height:48px;font-size:13px}}
 
 /* Operação ao vivo: ações claras e sem duplicação de filas */
-#queues #matPanels{display:none}
+#queues #matPanels{display:grid!important}
 .qc-reset{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:42px;margin-top:9px;padding:9px 12px;border:1px solid #d7b9b9;border-radius:10px;background:#fff7f7;color:#8c3030;font-size:12px;font-weight:800;cursor:pointer}
 .qc-reset:hover{background:#ffeaea;border-color:#c98d8d}
 .qc-live{background:#fbfffc;border-color:#b8dfc8}
