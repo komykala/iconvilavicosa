@@ -34,3 +34,10 @@
   .check-toggle:focus-within{outline:3px solid #d7b56d66;outline-offset:2px}
   #checkin .empty-state{font-size:13px;padding:22px 10px}
 }
+
+/* Formulário rápido de criação/edição de atleta */
+.athlete-form-panel{margin:0 0 18px;background:#fbfcfd;border:1px solid #dfe5e8}
+.athlete-form-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.athlete-form-actions{margin-top:16px;flex-wrap:wrap}
+.athlete-edit-button{margin-top:6px;min-height:34px}
+@media(max-width:700px){.athlete-form-grid{grid-template-columns:1fr}.athlete-form-panel{padding:14px}.athlete-form-actions button{flex:1;min-height:46px}.athlete-form-panel .section-head{align-items:flex-start}.athlete-form-panel .section-head button{flex:0 0 auto}.athlete-edit-button{min-height:40px;width:100%}}
