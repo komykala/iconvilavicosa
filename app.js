@@ -11,6 +11,23 @@ const correctedNames = {"carlos.albuquerque92@gmail.com": "Carlos Albuquerque", 
 function correctedName(email,name){return correctedNames[String(email||'').trim().toLowerCase()] || String(name||'').trim()}
 function normalizeAthlete(a){return {...a,display_name:correctedName(a.email,a.display_name),age_text:normalizeAge(a.age_text),weight_text:normalizeWeight(a.weight_text)}}
 
+function canonicalAthleteName(id, raw){
+ const byId=id?athletes.find(a=>String(a.id)===String(id)):null;
+ if(byId?.display_name)return byId.display_name;
+ const value=String(raw||'').trim();
+ const byEmail=athletes.find(a=>a.email&&a.email.toLowerCase()===value.toLowerCase());
+ if(byEmail?.display_name)return byEmail.display_name;
+ return correctedName(value,value);
+}
+function refreshMatchDisplayNames(){
+ matches=matches.map(m=>({...m,
+  fighter_a_name:canonicalAthleteName(m.fighter_a_id,m.fighter_a_name),
+  fighter_b_name:canonicalAthleteName(m.fighter_b_id,m.fighter_b_name),
+  winner_name:m.winner_id?canonicalAthleteName(m.winner_id,m.winner_name):canonicalAthleteName(null,m.winner_name)
+ }));
+}
+
+
 const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const roundName = (n,total=1) => { const remaining=total-n; if(remaining===0)return 'Final'; if(remaining===1)return 'Meia-final'; if(remaining===2)return 'Quartos de final'; if(remaining===3)return 'Oitavos de final'; return `Ronda ${n}`; };
 function matchRoundLabel(m){if(!m.round_number)return '';const total=m.bracket_id?Math.max(1,...matches.filter(x=>x.bracket_id===m.bracket_id).map(x=>x.round_number||1)):m.round_number;return roundName(m.round_number,total)}
@@ -20,7 +37,7 @@ function setConnected(s){const el=$('connection');el.innerHTML=`<i></i> ${s?'Lig
 function setUI(session){$('setup').classList.add('hidden');$('login').classList.toggle('hidden',!!session);$('app').classList.toggle('hidden',!session);$('recovery').classList.add('hidden');setConnected(!!session);$('who').textContent=session?.user?.email||'';$('sessionEmail').textContent=session?.user?.email||'';if(!session && !cfg().url) $('setup').classList.remove('hidden')}
 function showRecovery(){ $('setup').classList.add('hidden');$('login').classList.add('hidden');$('app').classList.add('hidden');$('recovery').classList.remove('hidden');setConnected(false); }
 async function init(){let c=cfg();$('url').value=c.url||APP_CONFIG.url||'';$('key').value=c.key||'';if(!c.url||!c.key){$('setup').classList.remove('hidden');$('login').classList.add('hidden');return}try{db=window.supabase.createClient(c.url,c.key);const {data:{session},error}=await db.auth.getSession();if(error)throw error;setUI(session);db.auth.onAuthStateChange((event,s)=>{if(event==='PASSWORD_RECOVERY'){showRecovery();return}setUI(s);if(s){user=s.user;setTimeout(()=>load(),0)}});if(session){user=session.user;await load()}}catch(e){toast('Não foi possível ligar ao Supabase: '+e.message);$('setup').classList.remove('hidden')}}
-async function load(){if(!db)return;try{const [a,m]=await Promise.all([db.from('athletes').select('*').order('display_name'),db.from('matches').select('*').order('created_at')]);if(a.error||m.error)throw(a.error||m.error);athletes=(a.data||[]).map(normalizeAthlete);matches=m.data||[];await inferMissingGenders();const unresolved=athletes.some(x=>!normalizeGender(x.gender)&&inferGenderFromName(x.display_name));if(unresolved){const {data:fresh}=await db.from('athletes').select('*').order('display_name');if(fresh)athletes=fresh.map(normalizeAthlete)}render();if(realtime)await db.removeChannel(realtime);realtime=db.channel('icon-live').on('postgres_changes',{event:'*',schema:'public',table:'athletes'},()=>load()).on('postgres_changes',{event:'*',schema:'public',table:'matches'},()=>load()).subscribe()}catch(e){toast(e.message+' — confirma as tabelas, migração e permissões RLS.')}}
+async function load(){if(!db)return;try{const [a,m]=await Promise.all([db.from('athletes').select('*').order('display_name'),db.from('matches').select('*').order('created_at')]);if(a.error||m.error)throw(a.error||m.error);athletes=(a.data||[]).map(normalizeAthlete);matches=m.data||[];await inferMissingGenders();const unresolved=athletes.some(x=>!normalizeGender(x.gender)&&inferGenderFromName(x.display_name));if(unresolved){const {data:fresh}=await db.from('athletes').select('*').order('display_name');if(fresh)athletes=fresh.map(normalizeAthlete)}refreshMatchDisplayNames();render();if(realtime)await db.removeChannel(realtime);realtime=db.channel('icon-live').on('postgres_changes',{event:'*',schema:'public',table:'athletes'},()=>load()).on('postgres_changes',{event:'*',schema:'public',table:'matches'},()=>load()).subscribe()}catch(e){toast(e.message+' — confirma as tabelas, migração e permissões RLS.')}}
 function render(){ $('nA').textContent=athletes.length;$('nC').textContent=athletes.filter(x=>x.arrived).length;$('nW').textContent=athletes.filter(x=>x.weighed).length;$('nM').textContent=matches.filter(x=>['called','in_progress'].includes(x.status)).length;renderCheck();renderAthletes();fillAthleteSelects();renderMatchRows();renderQuickCalls();renderQueues();renderPicker();renderBoards();renderBracketOptions();renderSchedule();}
 function renderCheck(){const q=$('search').value.toLowerCase();const filtered=athletes.filter(a=>[a.display_name,a.email,a.id,a.team].join(' ').toLowerCase().includes(q));$('checkRows').innerHTML=filtered.map(a=>`<tr><td><button class="athlete-link" onclick="openAthleteCategory('${a.id}')">${esc(a.display_name)}</button><br><small>${esc(a.email||a.id.slice(0,8))}</small></td><td>${esc(a.team||'—')}</td><td>${esc(a.weight_text||'—')}</td><td><input aria-label="Confirmar chegada de ${esc(a.display_name)}" type="checkbox" ${a.arrived?'checked':''} onchange="updateAthlete('${a.id}','arrived',this.checked)"></td><td><input aria-label="Confirmar pesagem de ${esc(a.display_name)}" type="checkbox" ${a.weighed?'checked':''} onchange="updateAthlete('${a.id}','weighed',this.checked)"></td></tr>`).join('');$('checkCards').innerHTML=filtered.map(a=>`<article class="check-card ${a.arrived&&a.weighed?'all-done':''}"><div class="check-card-info"><button class="athlete-link athlete-name-link" onclick="openAthleteCategory('${a.id}')">${esc(a.display_name)}</button><span>${esc(a.team||'Equipa por confirmar')} · ${esc(a.weight_text||'Peso por confirmar')}</span><small>${esc(a.email||a.id.slice(0,8))}</small></div><div class="check-card-actions"><label class="check-toggle ${a.arrived?'is-on':''}"><input type="checkbox" aria-label="Confirmar chegada de ${esc(a.display_name)}" ${a.arrived?'checked':''} onchange="updateAthlete('${a.id}','arrived',this.checked)"><span class="toggle-icon">${a.arrived?'✓':'○'}</span><span>Chegou</span></label><label class="check-toggle ${a.weighed?'is-on':''}"><input type="checkbox" aria-label="Confirmar pesagem de ${esc(a.display_name)}" ${a.weighed?'checked':''} onchange="updateAthlete('${a.id}','weighed',this.checked)"><span class="toggle-icon">${a.weighed?'✓':'⚖'}</span><span>Pesagem</span></label></div></article>`).join('');$('checkEmpty').classList.toggle('hidden',filtered.length>0);$('checkEmpty').textContent=athletes.length?'Não foram encontrados atletas para esta pesquisa.':'Ainda não existem atletas. Importe primeiro o ficheiro CSV.'}
 function exportAthletesCSV(){
@@ -59,25 +76,40 @@ function openAthleteForm(id=null){const a=id?athletes.find(x=>x.id===id):null;$(
 function editAthlete(id){document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x.dataset.tab==='athletes'));document.querySelectorAll('.pane').forEach(x=>x.classList.toggle('hidden',x.id!=='athletes'));openAthleteForm(id)}
 function closeAthleteForm(){$('athleteFormPanel').classList.add('hidden');document.body.classList.remove('athlete-form-open');$('athleteFormMsg').textContent=''}
 async function saveAthleteForm(e){
- e.preventDefault();const id=$('athleteEditId').value,name=$('athleteName').value.trim();const autoAssign=!id&&$('autoAssignBracket')?.checked;
+ e.preventDefault();
+ const id=$('athleteEditId').value, name=$('athleteName').value.trim(), autoAssign=!id&&$('autoAssignBracket')?.checked;
  if(!name){$('athleteFormMsg').textContent='O nome do atleta é obrigatório.';return}
- const email=$('athleteEmail').value.trim(),typedGender=normalizeGender($('athleteGender').value);
- const payload={display_name:name,email:email||null,team:$('athleteTeam').value.trim()||null,age_text:normalizeAge($('athleteAge').value)||null,belt:$('athleteBelt').value.trim()||null,weight_text:normalizeWeight($('athleteWeight').value)||null,gender:typedGender||null};
- $('saveAthlete').disabled=true;$('athleteFormMsg').textContent='A guardar na cloud…';
+ const email=$('athleteEmail').value.trim();
+ const genderValue=String($('athleteGender').value||'').trim().toUpperCase();
+ const gender=genderValue==='M'||genderValue==='F'?genderValue:null;
+ const payload={display_name:name,email:email||null,team:$('athleteTeam').value.trim()||null,age_text:normalizeAge($('athleteAge').value)||null,belt:$('athleteBelt').value.trim()||null,weight_text:normalizeWeight($('athleteWeight').value)||null};
+ $('saveAthlete').disabled=true;$('athleteFormMsg').textContent='A guardar os dados do atleta…';
  try{
-  let query;
-  if(id){query=await db.from('athletes').update(payload).eq('id',id)}else{query=await db.from('athletes').insert(payload).select('id').single()}
-  if(query.error){if(/gender|column/i.test(query.error.message||''))throw new Error('A coluna Sexo ainda não existe na base de dados. Execute migration_gender_adult_matches.sql no Supabase e tente novamente. Detalhe: '+query.error.message);throw query.error;}
-  const athleteId=id||query.data?.id;
+  let athleteId=id;
+  if(id){
+   const {error}=await db.from('athletes').update(payload).eq('id',id);
+   if(error)throw error;
+  }else{
+   const {data,error}=await db.from('athletes').insert(payload).select('id').single();
+   if(error)throw error;athleteId=data.id;
+  }
+  // Guardar sexo numa operação separada para identificar claramente falhas de coluna/permissões.
+  const genderResult=await db.from('athletes').update({gender}).eq('id',athleteId).select('id,gender').single();
+  if(genderResult.error){
+   const msg=genderResult.error.message||'Erro desconhecido';
+   if(/column .*gender|gender.*does not exist|schema cache/i.test(msg))throw new Error('A base de dados ainda não reconhece a coluna gender. No Supabase, execute migration_gender_adult_matches.sql e atualize o schema cache. Detalhe: '+msg);
+   throw new Error('Os restantes dados foram guardados, mas o sexo não foi guardado. Verifique as permissões UPDATE da tabela athletes no Supabase. Detalhe: '+msg);
+  }
+  if(genderResult.data?.gender!==gender)throw new Error('O Supabase não confirmou o sexo escolhido. Atualize a página e verifique as permissões e a coluna gender.');
   if(id){
    const linkedA=await db.from('matches').update({fighter_a_name:name}).eq('fighter_a_id',id);if(linkedA.error)throw linkedA.error;
    const linkedB=await db.from('matches').update({fighter_b_name:name}).eq('fighter_b_id',id);if(linkedB.error)throw linkedB.error;
    const linkedWinner=await db.from('matches').update({winner_name:name}).eq('winner_id',id);if(linkedWinner.error)throw linkedWinner.error;
   }
-  $('athleteFormMsg').textContent=id?'Alterações guardadas em todas as páginas e combates associados.':'Atleta adicionado à lista.';
-  toast(id?'Atleta atualizado em toda a aplicação.':'Atleta adicionado.');closeAthleteForm();await load();
+  $('athleteFormMsg').textContent=id?'Dados e sexo guardados com confirmação da base de dados.':'Atleta adicionado e dados guardados.';
+  toast(id?'Atleta atualizado.':'Atleta adicionado.');closeAthleteForm();await load();
   if(autoAssign&&athleteId)await autoPrepareBracket(athleteId);
- }catch(err){$('athleteFormMsg').textContent='Não foi possível guardar: '+err.message;toast('Erro ao guardar atleta.')}
+ }catch(err){$('athleteFormMsg').textContent='Não foi possível concluir a gravação: '+err.message;toast('Erro ao guardar: '+err.message)}
  finally{$('saveAthlete').disabled=false}
 }
 function fillAthleteSelects(){['a','b'].forEach(id=>{const old=$(id).value;$(id).innerHTML='<option value="">Escolher atleta…</option>'+athletes.map(a=>`<option value="${a.id}">${esc(a.display_name)} — ${esc(a.id.slice(0,8))}</option>`).join('');$(id).value=old})}
