@@ -31,8 +31,21 @@ function refreshMatchDisplayNames(){
 const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const roundName = (n,total=1) => { const remaining=total-n; if(remaining===0)return 'Final'; if(remaining===1)return 'Meia-final'; if(remaining===2)return 'Quartos de final'; if(remaining===3)return 'Oitavos de final'; return `Ronda ${n}`; };
 function matchRoundLabel(m){if(!m.round_number)return '';if(!m.bracket_id)return 'Combate';const total=Math.max(1,...matches.filter(x=>x.bracket_id===m.bracket_id).map(x=>x.round_number||1));return roundName(m.round_number,total)}
+function displayMatchCategory(m){
+ let cat=String(m.category||'').trim();
+ const a=athletes.find(x=>String(x.id)===String(m.fighter_a_id));
+ const b=athletes.find(x=>String(x.id)===String(m.fighter_b_id));
+ const ageGroupFromAthlete=x=>{if(!x)return '';const age=Number(String(x.age_text||'').match(/\d+/)?.[0]);if(!Number.isFinite(age))return '';if(age<=6)return '4–6 anos';if(age<=9)return '7–9 anos';if(age<=12)return '10–12 anos';if(age<=15)return '13–15 anos';if(age<=17)return '16–17 anos';return 'Adultos';};
+ const beltFromAthlete=x=>{if(!x)return '';const raw=String(x.belt||'').toLowerCase();const colors=['branca','cinzenta','cinza','amarela','laranja','verde','azul','roxa','castanha','marrom','preta'];const found=colors.find(c=>raw.includes(c));return found?found.replace('cinzenta','cinza').replace('castanha','castanha').replace('marrom','castanha'):''};
+ if(!cat||/^categoria$/i.test(cat)){
+  const belts=[beltFromAthlete(a),beltFromAthlete(b)].filter(Boolean);const ages=[ageGroupFromAthlete(a),ageGroupFromAthlete(b)].filter(Boolean);
+  const belt=belts[0]||'';const age=ages[0]||'';
+  cat=[age,belt?`Faixa ${belt}`:''].filter(Boolean).join(' · ')||'Categoria por definir';
+ }
+ return cat;
+}
 function matchReference(m){
- const cat=String(m.category||'Categoria').trim();
+ const cat=displayMatchCategory(m);
  const round=matchRoundLabel(m)||'Combate';
  const mat=[1,2].includes(Number(m.mat))?`Tatame ${m.mat}`:'Tatame por atribuir';
  const serial=String(m.match_code||'').match(/(\d{1,3})$/)?.[1];
@@ -313,7 +326,7 @@ for(let r=1;r<all.length;r++){for(const m of all[r]){const a=!!m.fighter_a_id,b=
 $('bracketMsg').textContent=`Quadro criado com ${selected.length} atletas e ${all.reduce((n,r)=>n+r.length,0)} posições de combate. Reveja as rondas e os byes.`;toast('Quadro eliminatório criado.');await load();$('bracketCategory').value='';}catch(e){$('bracketMsg').textContent='Não foi possível criar o quadro: '+e.message+'. Confirme se executou o ficheiro upgrade.sql no Supabase.';toast('Erro ao gerar quadro. Consulte a mensagem no formulário.')}finally{$('generateBracket').disabled=false}}
 
 /* Mesa de pontos: marcador independente, temporizador monotónico e gravação na cloud. */
-let scoreMatchId='', scoreLoadedMatchId='', scoreState={a:{points:0,advantages:0,penalties:0},b:{points:0,advantages:0,penalties:0}};
+let scoreMatchId='', scoreLoadedMatchId='', scoreNextMatchTimeout=null, scoreAutoFinishInProgress=false, scoreState={a:{points:0,advantages:0,penalties:0},b:{points:0,advantages:0,penalties:0}};
 let scoreRemaining=360, scoreRunning=false, scoreEndAt=0, scoreTicker=null;
 function selectedScoreMatch(){return matches.find(m=>String(m.id)===String(scoreMatchId))||null}
 function formatTimer(seconds){const s=Math.max(0,Math.ceil(seconds));return `${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`}
@@ -333,7 +346,7 @@ function renderScoreMatchOptions(){
 function renderScoreMatch(){
  const m=selectedScoreMatch();if(!m){$('scoreboardArena').classList.add('hidden');$('scoreboardEmpty').classList.remove('hidden');return}
  $('scoreboardEmpty').classList.add('hidden');$('scoreboardArena').classList.remove('hidden');
- $('scoreMatchRef').textContent=`${m.category||'Categoria'}${m.mat?` · Tatame ${m.mat}`:''}`;$('scoreMatchStatus').textContent=statusLabel(m.status).toUpperCase();if($('scoreRoundLabel'))$('scoreRoundLabel').textContent=matchRoundLabel(m)||'Combate';
+ document.querySelectorAll('#scoreMatchRef').forEach(el=>el.textContent=displayMatchCategory(m));$('scoreMatchStatus').textContent=statusLabel(m.status).toUpperCase();if($('scoreRoundLabel'))$('scoreRoundLabel').textContent=matchRoundLabel(m)||'Combate';
  $('scoreNameA').textContent=m.fighter_a_name||'Atleta por definir';$('scoreNameB').textContent=m.fighter_b_name||'Atleta por definir';
  $('scoreTeamA').textContent=athletes.find(a=>a.id===m.fighter_a_id)?.team||'Equipa não indicada';$('scoreTeamB').textContent=athletes.find(a=>a.id===m.fighter_b_id)?.team||'Equipa não indicada';
  if(scoreLoadedMatchId!==String(m.id)){
@@ -360,11 +373,42 @@ function playFightEndSound(){
  }catch(e){console.warn('Não foi possível emitir sinal sonoro',e)}
 }
 async function autoFinishFight(){
- const m=selectedScoreMatch();if(!m||m.status==='completed')return;
+ const m=selectedScoreMatch();if(!m||m.status==='completed'||scoreAutoFinishInProgress)return;
  const side=determineScoreWinner();
  if(!side){$('scoreMsg').textContent='Empate no marcador: resultado não foi fechado automaticamente. Confirme o vencedor de acordo com as regras da prova.';toast('Empate no marcador. É necessária decisão da mesa.');return}
+ scoreAutoFinishInProgress=true;
  $('scoreWinner').value=side;
- await saveScoreboardResult({sideOverride:side,automatic:true});
+ try{await saveScoreboardResult({sideOverride:side,automatic:true})}
+ finally{scoreAutoFinishInProgress=false}
+}
+async function loadNextScoreMatchAfterDelay(completedId){
+ if(scoreNextMatchTimeout)clearTimeout(scoreNextMatchTimeout);
+ $('scoreMsg').textContent='Combate terminado. O próximo combate será carregado em 2 minutos.';
+ scoreNextMatchTimeout=setTimeout(async()=>{
+  try{
+   const {data,error}=await db.from('matches').select('*').order('created_at');
+   if(error)throw error;
+   const fresh=data||[];
+   const pending=fresh.filter(x=>String(x.id)!==String(completedId)&&!['completed','cancelled'].includes(x.status)&&x.fighter_a_id&&x.fighter_b_id)
+    .sort((a,b)=>Number(a.mat||9)-Number(b.mat||9)||(a.round_number||1)-(b.round_number||1)||String(a.category||'').localeCompare(String(b.category||'')));
+   athletes=athletes;
+   matches=fresh;
+   if(pending.length){
+    const next=pending[0];scoreMatchId=String(next.id);scoreLoadedMatchId='';
+    render();
+    const sel=$('scoreMatchSelect');if(sel)sel.value=scoreMatchId;
+    renderScoreMatch();resetScoreTimer();
+    toast('Próximo combate carregado automaticamente.');
+    $('scoreMsg').textContent='Próximo combate carregado. Confirme que os atletas estão prontos e carregue em Iniciar.';
+    // Preserve fullscreen if it was active when the fight ended.
+    const board=$('scoreboard');
+    if(board&&!document.fullscreenElement&&document.body.classList.contains('score-fullscreen-active')){try{await board.requestFullscreen()}catch(e){}}
+   }else{
+    $('scoreMsg').textContent='Não existem mais combates com os dois atletas atribuídos.';
+    toast('Não existem mais combates prontos para carregar.');
+   }
+  }catch(e){$('scoreMsg').textContent='Não foi possível carregar o próximo combate: '+e.message;toast('Falha ao carregar o próximo combate.')}
+ },120000);
 }
 async function saveScoreboardResult(options={}){
  const m=selectedScoreMatch();if(!m){toast('Selecione um combate.');return}
@@ -380,13 +424,15 @@ async function saveScoreboardResult(options={}){
   toast(options.automatic?'Tempo terminado: resultado guardado.':'Resultado e pontuação guardados.');$('scoreMsg').textContent=options.automatic?'Resultado guardado automaticamente. Próximo combate em 2 minutos.':'Resultado guardado com sucesso.';
   if(options.automatic){
    const completedId=String(m.id);
-   await load();
-   setTimeout(async()=>{
-    const pending=matches.filter(x=>String(x.id)!==completedId&&!['completed','cancelled'].includes(x.status)&&x.fighter_a_id&&x.fighter_b_id)
-      .sort((a,b)=>Number(a.mat||9)-Number(b.mat||9)||(a.round_number||1)-(b.round_number||1)||String(a.category||'').localeCompare(String(b.category||'')));
-    if(pending.length){scoreMatchId=String(pending[0].id);scoreLoadedMatchId='';const sel=$('scoreMatchSelect');if(sel){renderScoreMatchOptions();sel.value=scoreMatchId}renderScoreMatch();resetScoreTimer();toast('Próximo combate carregado no marcador.');$('scoreMsg').textContent='Próximo combate carregado. Aguarda a mesa para iniciar o cronómetro.'}
-    else{$('scoreMsg').textContent='Não existem mais combates prontos para carregar.';toast('Não existem mais combates prontos.')}
-   },120000);
+   // Schedule independently before refreshing the main application state.
+   await loadNextScoreMatchAfterDelay(completedId);
+   // Keep the completed match visible during the two-minute interval.
+   matches=matches.map(x=>String(x.id)===completedId?{...x,...payload}:x);
+   render();
+   scoreMatchId=completedId;scoreLoadedMatchId=completedId;
+   const selector=$('scoreMatchSelect');if(selector)selector.value=completedId;
+   renderScoreMatch();
+   $('scoreMatchStatus').textContent='COMBATE TERMINADO';
   }else{scoreMatchId='';scoreLoadedMatchId='';await load()}
  }catch(e){$('scoreMsg').textContent='Não foi possível guardar: '+e.message;toast('Falha ao guardar resultado.')}finally{if(btn)btn.disabled=false}
 }

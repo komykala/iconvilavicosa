@@ -134,3 +134,17 @@ Substituir `index.html`, `styles.css` e `app.js` no repositório GitHub Pages pe
 - Dois minutos após o fim, o próximo combate pronto é carregado no marcador, mas o cronómetro não inicia sozinho: a mesa deve confirmar que os atletas estão prontos e carregar em Iniciar.
 - Se pontos, vantagens e penalizações ficarem exatamente iguais, o resultado não é decidido automaticamente; a mesa tem de aplicar as regras da competição e confirmar o vencedor.
 - O navegador precisa de permitir áudio. O sinal é gerado localmente no momento em que o cronómetro termina.
+
+
+## Versão 28 — categoria e fase explícitas no marcador
+- Corrigido o texto do marcador: a categoria é apresentada separadamente da fase da chave.
+- A categoria usa o nome da categoria registada; quando não existe nome útil, tenta compor a informação com o escalão etário e a faixa dos atletas.
+- A fase é apresentada como Final, Meia-final, Quartos de final, Oitavos de final ou ronda correspondente.
+- Removido um ID HTML duplicado que impedia atualizar o texto visível no rodapé do marcador.
+
+
+## Versão 29 — correção do carregamento automático seguinte
+- O agendamento dos 120 segundos é agora independente da atualização da interface e da cache local de combates.
+- Após guardar automaticamente o resultado, mantém o combate terminado visível durante os dois minutos.
+- No fim do intervalo, consulta novamente os combates diretamente no Supabase e carrega o primeiro combate elegível com os dois atletas atribuídos.
+- Tenta preservar o modo de ecrã inteiro e deixa o relógio parado para a mesa iniciar quando estiver pronta.
