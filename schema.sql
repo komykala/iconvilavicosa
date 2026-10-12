@@ -1,6 +1,6 @@
 create extension if not exists pgcrypto;
 create table if not exists public.athletes (
- id uuid primary key default gen_random_uuid(), display_name text not null, email text, team text, belt text, age_text text, weight_text text,
+ id uuid primary key default gen_random_uuid(), display_name text not null, email text, team text, belt text, age_text text, weight_text text, gender text,
  arrived boolean not null default false, weighed boolean not null default false, notes text, created_at timestamptz not null default now()
 );
 create table if not exists public.matches (

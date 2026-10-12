@@ -62,12 +62,12 @@ async function saveAthleteForm(e){
  e.preventDefault();const id=$('athleteEditId').value,name=$('athleteName').value.trim();const autoAssign=!id&&$('autoAssignBracket')?.checked;
  if(!name){$('athleteFormMsg').textContent='O nome do atleta é obrigatório.';return}
  const email=$('athleteEmail').value.trim(),typedGender=normalizeGender($('athleteGender').value);
- const payload={display_name:name,email:email||null,team:$('athleteTeam').value.trim()||null,age_text:normalizeAge($('athleteAge').value)||null,belt:$('athleteBelt').value.trim()||null,weight_text:normalizeWeight($('athleteWeight').value)||null,gender:typedGender||inferGenderFromName(name)||null};
+ const payload={display_name:name,email:email||null,team:$('athleteTeam').value.trim()||null,age_text:normalizeAge($('athleteAge').value)||null,belt:$('athleteBelt').value.trim()||null,weight_text:normalizeWeight($('athleteWeight').value)||null,gender:typedGender||null};
  $('saveAthlete').disabled=true;$('athleteFormMsg').textContent='A guardar na cloud…';
  try{
   let query;
   if(id){query=await db.from('athletes').update(payload).eq('id',id)}else{query=await db.from('athletes').insert(payload).select('id').single()}
-  if(query.error)throw query.error;
+  if(query.error){if(/gender|column/i.test(query.error.message||''))throw new Error('A coluna Sexo ainda não existe na base de dados. Execute migration_gender_adult_matches.sql no Supabase e tente novamente. Detalhe: '+query.error.message);throw query.error;}
   const athleteId=id||query.data?.id;
   if(id){
    const linkedA=await db.from('matches').update({fighter_a_name:name}).eq('fighter_a_id',id);if(linkedA.error)throw linkedA.error;

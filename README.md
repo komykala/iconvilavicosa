@@ -1,0 +1,78 @@
+# ICON Jiu-Jitsu — Tournament Control v2
+
+Interface responsiva para gerir check-in, pesagem, atletas, dois tatames e quadros de eliminação direta com avanço automático de vencedores.
+
+## Antes de publicar
+1. Faça uma exportação/backup dos dados existentes no Supabase.
+2. No Supabase SQL Editor, execute `upgrade.sql` uma única vez. Este script só acrescenta colunas e índices; não elimina nem recria atletas ou combates.
+3. Em `app.js`, substitua `COLOCA_AQUI_A_CHAVE_PUBLICA` pela chave pública `publishable` ou `anon` do projeto Supabase. O URL do projeto está definido. Nunca use `service_role`/`secret` no frontend.
+4. Carregue `index.html`, `styles.css` e `app.js` para a raiz do repositório GitHub e faça Commit changes.
+5. Em Supabase → Authentication → URL Configuration, confirme que o URL do GitHub Pages está em Redirect URLs para permitir recuperação de palavra-passe.
+6. Teste com uma categoria fictícia antes de criar quadros oficiais.
+
+## Funcionalidades
+- Dashboard com contagem de inscrições, chegadas, pesagens e combates ativos.
+- Check-in e pesagem em interface adaptada a telemóvel.
+- Lista de atletas e importação CSV.
+- Painéis dos Tatames 1 e 2 com estados por chamar, chamados e a decorrer.
+- Combates manuais.
+- Geração de quadro de eliminação direta a partir de atletas selecionados, com byes e rondas.
+- Quando se confirma um vencedor, este é colocado no lugar correspondente da ronda seguinte. Byes podem avançar automaticamente.
+- Recuperação de palavra-passe com redirecionamento para o URL publicado e formulário para definir a nova palavra-passe.
+- Sincronização Supabase Realtime.
+
+## Notas importantes
+- A chave pública no frontend é visível por definição. A segurança depende de RLS; o esquema atual permite a qualquer utilizador autenticado editar atletas e combates. Não abra o acesso público e reveja as políticas antes do torneio.
+- Para gerar quadros, o `upgrade.sql` é necessário. Não execute `schema.sql` de novo numa base de dados já em utilização.
+- A geração de quadros cria combates novos; não elimina ou modifica combates existentes. Verifique nomes, categoria e atribuição de tatame antes de usar resultados oficiais.
+- A importação CSV tenta atualizar atletas pelo nome completo. Reveja duplicados e homónimos manualmente.
+- A sincronização exige ligação à Internet e Realtime ativo no Supabase.
+
+
+## Adicionar e editar atletas
+Na secção **Atletas**, use **Novo atleta** para registar um atleta no momento ou **Editar** na linha correspondente para corrigir nome, email, equipa, idade/escalão, faixa e peso. O formulário grava diretamente na tabela `athletes` do Supabase e os dados passam a aparecer no check-in, nos seletores de combates e na seleção para quadros. Também existe um atalho **Adicionar atleta no momento** no check-in. Não é necessária uma nova migração SQL para esta funcionalidade.
+
+
+## Atualização de 12-10-2026 — edição móvel e chaves revistas
+
+- No telemóvel, a gestão de atletas usa cartões pesquisáveis e o formulário abre em ecrã inteiro, com campos maiores e botões Guardar/Cancelar fixos na parte inferior.
+- `proposed_brackets.json` contém 50 emparelhamentos para 100 registos de atletas após remover duas inscrições que parecem duplicados exatos.
+- Os emparelhamentos são propostas: 40 registos não têm nome preenchido e surgem como `NOME POR CONFIRMAR`; confirmar identidade antes de validar os quadros.
+- A importação usa prefixo `ICON-R-`. Se existirem propostas antigas `ICON-P-` ainda pendentes, pede confirmação para as substituir. Não substitui automaticamente combates chamados, em curso ou concluídos.
+- A associação aos registos do Supabase privilegia o nome completo. Um email partilhado por vários familiares não é usado para escolher arbitrariamente um atleta.
+- Não executar novamente `schema.sql` numa base de dados já utilizada. Publicar os ficheiros estáticos mantendo as chaves/configuração existentes.
+
+
+## Controlo rápido de chamadas
+Na secção **Tatames**, cada tatame tem agora um painel de controlo rápido que mostra o combate a decorrer e o seguinte chamado/em espera. É possível chamar a próxima chave e iniciar a chamada com menos passos.
+Os quadros de eliminação direta já têm avanço automático de bye: quando uma luta de uma ronda tem apenas um atleta, a aplicação pode concluir esse combate como bye e avançar o atleta para a ronda seguinte. Isto aplica-se aos quadros que tenham ligações de ronda (`next_match_id`); não inventa adversários nem altera automaticamente os emparelhamentos preliminares simples.
+
+
+### Controlo rápido e correção de início acidental
+
+A área “Chamadas e combates” mostra o combate a decorrer e o seguinte por tatame, com ações principais destacadas. Se um combate for iniciado por engano, use “Desfazer início · repor como chamado”. A aplicação pede confirmação e devolve o estado a “Atletas chamados”, sem apagar atletas nem registar vencedor. A lista antiga duplicada foi ocultada nesta área para reduzir confusão.
+
+## Controlo rápido v5
+- Separadores “Próximos combates” e “Concluídos”, atualizados pelo carregamento/realtime existente.
+- Nos combates a decorrer é possível escolher o vencedor ou fazer reset do início.
+- Uma chamada sem resposta pode ser colocada “Em espera” e retomada mais tarde.
+- Os nomes dos atletas no painel rápido abrem o percurso do atleta na categoria selecionada, com a lista de combates dessa categoria.
+- Antes de usar “Colocar em espera”, executar `migration_waiting_status.sql` no Supabase SQL Editor para autorizar o novo estado `waiting`.
+
+## Atualização v6 — navegação e percurso do atleta
+- Os separadores **Próximos combates** e **Concluídos** passaram para a navegação principal, acessíveis sem entrar em Tatames ou Combates & quadros.
+- Os contadores dos separadores principais acompanham os estados de combate carregados pela sincronização em tempo real.
+- Clicar no nome de um atleta abre a sua consulta de percurso; quando tem mais do que uma categoria, é apresentada uma escolha clicável em vez de um prompt de texto.
+- Corrigida a estrutura dos nomes clicáveis no seletor de atletas dos quadros, evitando botões interativos dentro de etiquetas de seleção.
+
+
+### Exportar lista atualizada de atletas
+No separador **05 — Atletas**, use **Exportar lista CSV** para descarregar todos os registos atuais guardados na aplicação, incluindo alterações de nome, email, equipa, idade, sexo, faixa, peso, chegada e pesagem. A exportação inclui todos os atletas, mesmo quando a pesquisa ou os filtros mostram apenas uma parte da lista. O ficheiro é compatível com Excel e usa ponto e vírgula como separador.
+
+### Inscrição no próprio dia e preparação automática de chave
+No formulário de novo atleta existe a opção «Após guardar, preparar automaticamente uma chave com atletas compatíveis ainda sem chave». Quando selecionada, após guardar a inscrição, a aplicação seleciona os atletas ainda sem quadro que coincidam no escalão etário e faixa; nos adultos exige sexo igual e considera também proximidade de peso. A aplicação prepara o formulário de criação do quadro e pede confirmação antes de gerar, sem alterar quadros existentes. Se não houver pelo menos dois atletas compatíveis, o atleta é guardado e a aplicação informa que é necessário associar mais atletas ou gerar o quadro manualmente.
+
+## Versão 12 — sincronização dos dados e inferência conservadora do sexo
+- Ao editar um atleta, o nome atualizado é propagado para os nomes dos participantes e vencedor em todos os combates associados por ID, para que filas, resultados e quadros apresentem os dados atualizados após recarregar.
+- Para atletas sem sexo registado, a aplicação tenta inferir o sexo através de uma lista conservadora de primeiros nomes comuns em português. A inferência só é aplicada quando o campo está vazio/nulo; pode ser corrigida manualmente no formulário do atleta. Nomes ambíguos ou não reconhecidos ficam sem sexo atribuído.
+- A inferência automática é uma estimativa baseada no nome, não uma confirmação da identidade ou do sexo do atleta. Verifique os registos antes de gerar combates de adultos.
