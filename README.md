@@ -112,3 +112,10 @@ Antes de utilizar o botão **Guardar resultado final**, executar `migration_scor
 
 ### Publicação
 Substituir `index.html`, `styles.css` e `app.js` no repositório GitHub Pages pelos ficheiros desta versão. Manter o restante conteúdo e a configuração Supabase existente. A aplicação não foi publicada automaticamente.
+
+
+## Versão 25 — mesa de pontos para transmissão
+- O marcador em ecrã inteiro foi redesenhado segundo a referência visual fornecida: duas faixas horizontais por atleta, três cartões grandes para pontos/vantagens/penalizações e relógio grande na zona inferior.
+- Controlos rápidos para adicionar pontos, vantagens e penalizações, iniciar/pausar/reiniciar o tempo, trocar cores e emitir um alerta sonoro.
+- A seleção de vencedor e gravação final continuam na área inferior do marcador.
+- O botão de trocar cores altera a apresentação visual dos lados no ecrã; não altera os atletas nem a pontuação registada.

@@ -51,21 +51,30 @@
     <div id="scoreboardArena" class="scoreboard-arena hidden">
       <div class="scoreboard-match-meta"><span id="scoreMatchRef">CATEGORIA · RONDA</span><span id="scoreMatchStatus" class="score-status">POR CHAMAR</span></div>
       <div class="scoreboard-main">
-        <article class="score-side score-side-a">
-          <div class="score-side-label">AZUL · ATLETA A</div><h2 id="scoreNameA">Atleta A</h2><p id="scoreTeamA">Equipa</p>
-          <div id="scorePointsA" class="score-points">0</div>
-          <div class="score-control-row"><button type="button" onclick="changeScore('a','points',2)">+2 PONTOS</button><button type="button" onclick="changeScore('a','points',3)">+3</button><button type="button" onclick="changeScore('a','points',4)">+4</button></div>
-          <div class="score-secondary"><div><small>VANTAGENS</small><div class="score-counter"><button onclick="changeScore('a','advantages',-1)" aria-label="Retirar vantagem atleta A">−</button><b id="scoreAdvantagesA">0</b><button onclick="changeScore('a','advantages',1)" aria-label="Adicionar vantagem atleta A">+</button></div></div><div><small>PENALIZAÇÕES</small><div class="score-counter"><button onclick="changeScore('a','penalties',-1)" aria-label="Retirar penalização atleta A">−</button><b id="scorePenaltiesA">0</b><button onclick="changeScore('a','penalties',1)" aria-label="Adicionar penalização atleta A">+</button></div></div></div>
-          <button class="score-undo" type="button" onclick="changeScore('a','points',-1)">−1 ponto</button>
+        <article class="score-athlete-row score-athlete-a">
+          <div class="score-athlete-info"><div class="score-side-label"><span class="score-color-dot"></span> AZUL</div><h2 id="scoreNameA">Atleta A</h2><p id="scoreTeamA">Equipa</p></div>
+          <div class="score-metrics">
+            <div class="score-tile score-tile-points"><span>PONTOS</span><b id="scorePointsA">0</b><button onclick="changeScore('a','points',-1)" aria-label="Retirar ponto atleta A">−</button></div>
+            <div class="score-tile score-tile-advantages"><span>VANTAGENS</span><b id="scoreAdvantagesA">0</b><button onclick="changeScore('a','advantages',-1)" aria-label="Retirar vantagem atleta A">−</button></div>
+            <div class="score-tile score-tile-penalties"><span>PENALIZAÇÕES</span><b id="scorePenaltiesA">0</b><button onclick="changeScore('a','penalties',-1)" aria-label="Retirar penalização atleta A">−</button></div>
+          </div>
+          <div class="score-add-buttons"><button onclick="changeScore('a','points',2)">+2</button><button onclick="changeScore('a','points',3)">+3</button><button onclick="changeScore('a','points',4)">+4</button><button onclick="changeScore('a','advantages',1)">+ Vant.</button><button onclick="changeScore('a','penalties',1)">+ Penal.</button></div>
         </article>
-        <div class="score-center"><span>TEMPO</span><div id="scoreTimer" class="score-timer">06:00</div><div id="scoreTimerState" class="score-timer-state">PRONTO</div><div class="score-timer-controls"><button id="scoreStart" class="primary" type="button">▶ Iniciar</button><button id="scorePause" class="button-light" type="button">Ⅱ Pausa</button><button id="scoreReset" class="button-light" type="button">↺ Reiniciar</button></div><label class="score-duration">Duração (minutos)<input id="scoreDuration" type="number" min="1" max="30" value="6"></label></div>
-        <article class="score-side score-side-b">
-          <div class="score-side-label">BRANCO · ATLETA B</div><h2 id="scoreNameB">Atleta B</h2><p id="scoreTeamB">Equipa</p>
-          <div id="scorePointsB" class="score-points">0</div>
-          <div class="score-control-row"><button type="button" onclick="changeScore('b','points',2)">+2 PONTOS</button><button type="button" onclick="changeScore('b','points',3)">+3</button><button type="button" onclick="changeScore('b','points',4)">+4</button></div>
-          <div class="score-secondary"><div><small>VANTAGENS</small><div class="score-counter"><button onclick="changeScore('b','advantages',-1)" aria-label="Retirar vantagem atleta B">−</button><b id="scoreAdvantagesB">0</b><button onclick="changeScore('b','advantages',1)" aria-label="Adicionar vantagem atleta B">+</button></div></div><div><small>PENALIZAÇÕES</small><div class="score-counter"><button onclick="changeScore('b','penalties',-1)" aria-label="Retirar penalização atleta B">−</button><b id="scorePenaltiesB">0</b><button onclick="changeScore('b','penalties',1)" aria-label="Adicionar penalização atleta B">+</button></div></div></div>
-          <button class="score-undo" type="button" onclick="changeScore('b','points',-1)">−1 ponto</button>
+        <article class="score-athlete-row score-athlete-b">
+          <div class="score-athlete-info"><div class="score-side-label"><span class="score-color-dot"></span> BRANCO</div><h2 id="scoreNameB">Atleta B</h2><p id="scoreTeamB">Equipa</p></div>
+          <div class="score-metrics">
+            <div class="score-tile score-tile-points"><span>PONTOS</span><b id="scorePointsB">0</b><button onclick="changeScore('b','points',-1)" aria-label="Retirar ponto atleta B">−</button></div>
+            <div class="score-tile score-tile-advantages"><span>VANTAGENS</span><b id="scoreAdvantagesB">0</b><button onclick="changeScore('b','advantages',-1)" aria-label="Retirar vantagem atleta B">−</button></div>
+            <div class="score-tile score-tile-penalties"><span>PENALIZAÇÕES</span><b id="scorePenaltiesB">0</b><button onclick="changeScore('b','penalties',-1)" aria-label="Retirar penalização atleta B">−</button></div>
+          </div>
+          <div class="score-add-buttons"><button onclick="changeScore('b','points',2)">+2</button><button onclick="changeScore('b','points',3)">+3</button><button onclick="changeScore('b','points',4)">+4</button><button onclick="changeScore('b','advantages',1)">+ Vant.</button><button onclick="changeScore('b','penalties',1)">+ Penal.</button></div>
         </article>
+      </div>
+      <div class="scoreboard-live-footer">
+        <div class="score-live-details"><div id="scoreMatchRef">CATEGORIA · RONDA</div><strong id="scoreRoundLabel">Final</strong>
+          <div class="score-live-controls"><button id="scoreStart" class="score-start" type="button">Iniciar</button><button id="scorePause" class="score-pause" type="button">Pausa</button><button id="scoreReset" class="score-reset" type="button">Reiniciar</button><button id="scoreSwapColors" class="score-swap" type="button">Trocar cores</button><button id="scoreFullscreenBell" class="score-bell" type="button" aria-label="Alerta sonoro">🔔</button></div>
+        </div>
+        <div class="score-clock"><div id="scoreTimer" class="score-timer">06:00</div><div id="scoreTimerState" class="score-timer-state">PRONTO</div><label class="score-duration">Duração (minutos)<input id="scoreDuration" type="number" min="1" max="30" value="6"></label></div>
       </div>
       <div class="scoreboard-bottom"><div><span class="section-kicker">REGISTAR RESULTADO</span><p>Escolha o vencedor. O resultado será guardado na cloud e o atleta avança na chave, quando aplicável.</p></div><label>Vencedor<select id="scoreWinner"><option value="">Selecionar vencedor…</option><option value="a">Atleta azul (A)</option><option value="b">Atleta branco (B)</option></select></label><button id="scoreSaveResult" class="primary" type="button">Guardar resultado final</button></div>
       <p id="scoreMsg" class="feedback" aria-live="polite"></p>
@@ -74,5 +83,5 @@
   <footer class="app-footer"><span>ICON JIU-JITSU · TOURNAMENT CONTROL</span><div><span id="sessionEmail"></span><button id="signOut" class="text-button">Terminar sessão ↗</button></div></footer>
 </section>
 </main><div id="toast" role="status" aria-live="polite"></div>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="app.js?v=24"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="app.js?v=25"></script>
 </body></html>

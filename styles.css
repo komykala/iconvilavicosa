@@ -264,3 +264,72 @@ tbody tr:hover td{background:#fafcfc}
 .score-fullscreen-active #scoreboard:fullscreen .score-timer{font-size:clamp(60px,8vw,120px)}
 @media(max-width:900px){.scoreboard-toolbar{align-items:stretch;flex-direction:column}.scoreboard-toolbar-actions{min-width:0;width:100%}.scoreboard-main{grid-template-columns:minmax(0,1fr) minmax(160px,.65fr) minmax(0,1fr)}.score-secondary{grid-template-columns:1fr}.scoreboard-bottom{grid-template-columns:1fr 1fr}.scoreboard-bottom>div{grid-column:1/-1}}
 @media(max-width:650px){.main-nav{position:relative}.scoreboard-toolbar-actions{flex-direction:column;align-items:stretch}.scoreboard-toolbar-actions label{width:100%}.scoreboard-main{grid-template-columns:1fr 1fr;gap:9px;padding:12px 0}.score-center{grid-column:1/-1;grid-row:1;padding:12px;background:#192630;border-radius:14px}.score-timer-controls{max-width:360px}.score-duration{max-width:150px}.score-side{padding:12px 8px}.score-side h2{font-size:17px;min-height:3em}.score-points{font-size:clamp(58px,18vw,100px);margin:12px 0}.score-control-row{gap:4px}.score-control-row button{padding:12px 2px;font-size:12px}.score-secondary{gap:6px}.score-counter{gap:7px}.scoreboard-bottom{grid-template-columns:1fr}.scoreboard-bottom>div{grid-column:auto}.scoreboard-bottom .primary{width:100%}.scoreboard-match-meta{align-items:flex-start;flex-direction:column}.scoreboard-arena{border-radius:14px}}
+
+
+/* v25 — mesa de pontos inspirada no layout de transmissão enviado */
+.scoreboard-arena{background:#1b2733;color:#f7f9fb;border-radius:0;padding:0;box-shadow:none;overflow:hidden}
+.scoreboard-match-meta{display:none}
+.scoreboard-main{display:flex;flex-direction:column;gap:0;padding:0}
+.score-athlete-row{display:grid;grid-template-columns:minmax(260px,1fr) minmax(380px,.98fr);grid-template-rows:auto auto;column-gap:24px;align-items:center;padding:14px 1.6%;min-height:230px}
+.score-athlete-a{background:#1768a8;color:#fff}
+.score-athlete-b{background:#fff;color:#090b0d}
+.score-athlete-info{grid-column:1;grid-row:1;min-width:0}
+.score-athlete-info .score-side-label{font-size:clamp(11px,1vw,15px);letter-spacing:.12em;display:flex;align-items:center;gap:9px}
+.score-color-dot{display:inline-block;width:10px;height:10px;border-radius:50%;background:#f7fbff;border:1px solid rgba(0,0,0,.25)}
+.score-athlete-a .score-color-dot{background:#fff}
+.score-athlete-b .score-color-dot{background:#1b2733}
+.score-athlete-info h2{font-size:clamp(30px,3.7vw,64px);font-weight:400;letter-spacing:-.045em;line-height:1.05;min-height:0;margin:12px 0 8px;overflow-wrap:anywhere}
+.score-athlete-info p{font-size:clamp(17px,1.7vw,30px);font-weight:400;opacity:.92;min-height:0;margin:0}
+.score-metrics{grid-column:2;grid-row:1 / span 2;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(8px,1.5vw,28px);align-self:stretch;align-items:center}
+.score-tile{height:clamp(130px,12.5vw,230px);min-height:120px;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:7px;color:#fff;overflow:hidden}
+.score-tile span{font-size:clamp(9px,.9vw,13px);font-weight:900;letter-spacing:.1em;position:absolute;top:12px;left:8px;right:8px;text-align:center}
+.score-tile b{font-size:clamp(60px,7.5vw,140px);line-height:1;font-weight:500;font-variant-numeric:tabular-nums}
+.score-tile button{position:absolute;left:0;bottom:0;border:0;border-radius:0 5px 0 0;width:31px;height:30px;background:rgba(0,0,0,.23);color:rgba(255,255,255,.65);font-weight:900;cursor:pointer}
+.score-tile-points{background:#61c45e}
+.score-tile-advantages{background:#fff176;color:#090909}
+.score-tile-advantages button{color:#555;background:rgba(0,0,0,.2)}
+.score-tile-penalties{background:#ff0808}
+.score-add-buttons{grid-column:1;grid-row:2;display:flex;flex-wrap:wrap;gap:7px;margin-top:15px;align-self:start}
+.score-add-buttons button{background:transparent;color:inherit;border:1px solid currentColor;border-radius:0;padding:7px 11px;font-size:12px;cursor:pointer}
+.score-athlete-a .score-add-buttons button:hover{background:rgba(255,255,255,.14)}
+.score-athlete-b .score-add-buttons button:hover{background:#edf1f4}
+.scoreboard-live-footer{display:grid;grid-template-columns:minmax(0,1fr) minmax(300px,.8fr);align-items:center;gap:20px;background:#1b2733;padding:22px 1.6% 26px;color:#f7f9fb;border-top:1px solid rgba(255,255,255,.06)}
+.score-live-details>div:first-child{font-size:clamp(22px,2.5vw,42px);font-weight:400;letter-spacing:-.03em}
+.score-live-details strong{display:block;color:#ff1d25;font-size:clamp(24px,2.8vw,48px);margin:10px 0 14px}
+.score-live-controls{display:flex;flex-wrap:wrap;gap:7px}
+.score-live-controls button{border-radius:0;background:transparent;padding:9px 13px;border:1px solid #87939c;color:#fff;font-size:12px;cursor:pointer}
+.score-live-controls .score-start{border-color:#56be68;color:#56be68}
+.score-live-controls .score-pause{border-color:#e9b84f;color:#e9b84f}
+.score-live-controls .score-reset{border-color:#9eabb4;color:#e1e7eb}
+.score-live-controls .score-swap{border-color:#e1e7eb}
+.score-live-controls .score-bell{padding:9px 11px}
+.score-clock{text-align:right;align-self:center}
+.score-clock .score-timer{font-size:clamp(76px,10vw,180px);font-weight:300;letter-spacing:-.055em;line-height:1;font-variant-numeric:tabular-nums;margin:0;white-space:nowrap}
+.score-clock .score-timer-state{font-size:11px;margin-top:5px;color:#e8c66f;letter-spacing:.15em}
+.score-clock .score-duration{display:flex;flex-direction:row;align-items:center;justify-content:flex-end;gap:10px;max-width:none;margin-top:10px;font-size:10px}
+.score-clock .score-duration input{width:70px;padding:6px}
+.scoreboard-bottom{background:#1b2733;padding:15px 1.6% 22px;grid-template-columns:minmax(0,1fr) minmax(180px,.5fr) auto}
+.scoreboard-bottom p{color:#c3cdd2}
+.scoreboard-bottom label{color:#d3dbe0}
+.scoreboard-bottom select{background:#263541}
+.scoreboard-arena .feedback{padding:0 1.6% 10px}
+.score-fullscreen-active #scoreboard:fullscreen{padding:0;background:#1b2733}
+.score-fullscreen-active #scoreboard:fullscreen .scoreboard-arena{min-height:100vh;display:block;padding:0;border-radius:0}
+.score-fullscreen-active #scoreboard:fullscreen .scoreboard-main{height:58vh}
+.score-fullscreen-active #scoreboard:fullscreen .score-athlete-row{flex:1;min-height:0;grid-template-columns:minmax(260px,1fr) minmax(380px,.98fr)}
+.score-fullscreen-active #scoreboard:fullscreen .score-tile{height:90%;min-height:0}
+.score-fullscreen-active #scoreboard:fullscreen .scoreboard-live-footer{min-height:30vh}
+.score-fullscreen-active #scoreboard:fullscreen .score-clock .score-timer{font-size:clamp(100px,11vw,200px)}
+@media(max-width:850px){
+ .score-athlete-row{grid-template-columns:minmax(0,1fr);padding:16px;min-height:0;row-gap:12px}
+ .score-athlete-info{grid-column:1;grid-row:1}
+ .score-metrics{grid-column:1;grid-row:2;gap:9px}
+ .score-tile{height:clamp(105px,24vw,170px);min-height:100px}
+ .score-tile b{font-size:clamp(54px,13vw,100px)}
+ .score-add-buttons{grid-column:1;grid-row:3;margin-top:0}
+ .scoreboard-live-footer{grid-template-columns:1fr;gap:16px}
+ .score-clock{text-align:left}
+ .score-clock .score-timer{font-size:clamp(70px,16vw,120px)}
+ .score-clock .score-duration{justify-content:flex-start}
+}
+@media(max-width:500px){.score-athlete-info h2{font-size:29px}.score-athlete-info p{font-size:17px}.score-tile span{font-size:8px;top:8px}.score-tile button{width:25px;height:25px}.score-add-buttons button{padding:7px 8px}.score-live-controls button{padding:8px 9px}}
